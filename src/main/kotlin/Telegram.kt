@@ -46,7 +46,31 @@ data class Chat(
     val id: Long,
 )
 
-fun main(args: Array<String>) {
+@Serializable
+data class SendMessageRequest(
+    @SerialName("chat_id")
+    val chatId: Long,
+    @SerialName("text")
+    val text: String,
+    @SerialName("reply_markup")
+    val replyMarkup: ReplyMarkup,
+)
+
+@Serializable
+data class ReplyMarkup(
+    @SerialName("inline_keyboard")
+    val inlineKeyboard: List<List<InlineKeyBoard>>,
+)
+
+@Serializable
+data class InlineKeyBoard(
+    @SerialName("callback_data")
+    val calbackData: String,
+    @SerialName("text")
+    val text: String,
+)
+
+    fun main(args: Array<String>) {
     if (args.isEmpty()) {
         println("Not found token")
         return
@@ -125,12 +149,14 @@ class TelegramBotService(private val botToken: String, private val trainer: Lear
             callbackData == CALLBACK_LEARN_WORDS -> {
                 checkNextQuestionAndSend(chatId)
             }
+
             callbackData == CALLBACK_STATISTIC -> {
                 val stats = trainer.getStatistics()
                 val message =
                     "Результат изучения: ${stats.learnedCount}/${stats.totalCount} (${stats.percentCount}%)"
                 sendMessage(chatId, message)
             }
+
             callbackData.startsWith(CALLBACK_DATA_ANSWER_PREFIX) -> {
                 val indexStr = callbackData.removePrefix(CALLBACK_DATA_ANSWER_PREFIX)
                 val userAnswerIndex = indexStr.toIntOrNull()
@@ -139,6 +165,7 @@ class TelegramBotService(private val botToken: String, private val trainer: Lear
                 sendMessage(chatId, response)
                 checkNextQuestionAndSend(chatId)
             }
+
             else -> sendMessage(chatId, "Неизвестная команда: $callbackData")
         }
     }
