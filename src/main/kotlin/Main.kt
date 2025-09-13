@@ -1,7 +1,6 @@
 import additional.LearnWordTrainer
 import additional.Question
 
-
 data class Word(
     val original: String,
     val translate: String,
