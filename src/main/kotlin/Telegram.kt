@@ -27,13 +27,23 @@ data class Response(
 @Serializable
 data class Message(
     @SerialName("text")
-    val text: String,
+    val text: String? = null,
+    @SerialName("chat")
+    val chat: Chat,
 )
 
 @Serializable
 data class CallbackQuery(
     @SerialName("data")
-    val data: String,
+    val data: String? = null,
+    @SerialName("message")
+    val message: Message? = null,
+)
+
+@Serializable
+data class Chat(
+    @SerialName("id")
+    val id: Long,
 )
 
 fun main(args: Array<String>) {
@@ -68,80 +78,68 @@ class TelegramBotService(private val botToken: String, private val trainer: Lear
     }
 
     private val client = HttpClient.newBuilder().build()
-    private var lastUpdateId = 0
+    private var lastUpdateId = 0L
 
     val json = Json {
         ignoreUnknownKeys = true
     }
 
-
     fun getUpdates(): String {
-        val url = "$BASE_URL$botToken/getUpdates?offset=$lastUpdateId"
+        val url = "$BASE_URL$botToken/getUpdates?offset=${lastUpdateId + 1}"
         val request = HttpRequest.newBuilder().uri(URI.create(url)).build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofString())
         return response.body()
     }
 
     fun processUpdates() {
-        val updates = getUpdates()
-        println("Updates: $updates")
+        val responseString = getUpdates()
+        println("Updates: $responseString")
+        val response: Response = json.decodeFromString(responseString)
+        val updates = response.result
 
-        val updateIds = updateIdRegex.findAll(updates).map { it.groupValues[1].toInt() }.toList()
-        if (updateIds.isNotEmpty()) {
-            lastUpdateId = updateIds.maxOrNull()!! + 1
-        }
+        for (update in updates) {
+            if (update.update_id >= lastUpdateId) {
+                lastUpdateId = update.update_id
+            }
 
-        val texts = messageTextRegex.findAll(updates).map { it.groupValues[1] }.toList()
-        val chatIds = chatIdRegex.findAll(updates).map { it.groupValues[1].toLong() }.toList()
-        val dataList = dataRegex.findAll(updates).map { it.groupValues[1] }.toList()
+            val chatId = update.message?.chat?.id ?: update.callbackQuery?.message?.chat?.id
+            val text = update.message?.text
+            val callbackData = update.callbackQuery?.data
 
-        for ((index, updateId) in updateIds.withIndex()) {
-            val chatId = chatIds.getOrNull(index)
-            val text = texts.getOrNull(index)
-            val callbackData = dataList.getOrNull(index)
-            if (chatId != null && text != null) {
-                handleUpdate(chatId, text, updateId, callbackData)
+            if (chatId != null) {
+                handleUpdate(chatId, text, callbackData)
             }
         }
     }
 
-    fun handleUpdate(chatId: Long, text: String, updateId: Int, callbackData: String?) {
-        if (updateId >= this.lastUpdateId) {
-            this.lastUpdateId = updateId + 1
+    fun handleUpdate(chatId: Long, text: String?, callbackData: String?) {
+        when {
+            text == CMD_HELLO -> sendMessage(chatId, "hello")
+            text == CMD_MENU -> sendMenu(chatId)
+            callbackData != null -> handleCallback(chatId, callbackData)
         }
+    }
 
-        if (text == CMD_HELLO) {
-            sendMessage(chatId, "hello")
-        }
-
-        if (text == CMD_MENU) {
-            sendMenu(chatId)
-        }
-
-        if (callbackData != null) {
-            when {
-                callbackData == CALLBACK_LEARN_WORDS -> {
-                    checkNextQuestionAndSend(trainer, this, chatId)
-                }
-
-                callbackData == CALLBACK_STATISTIC -> {
-                    val stats = trainer.getStatistics()
-                    val message =
-                        "Результат изучения: ${stats.learnedCount}/${stats.totalCount} (${stats.percentCount}%)"
-                    sendMessage(chatId, message)
-                }
-
-                callbackData.startsWith(CALLBACK_DATA_ANSWER_PREFIX) -> {
-                    val indexStr = callbackData.removePrefix(CALLBACK_DATA_ANSWER_PREFIX)
-                    val userAnswerIndex = indexStr.toIntOrNull()
-                    val isCorrect = trainer.checkAnswer(userAnswerIndex)
-                    val response = if (isCorrect) "Правильно!" else "Неправильно"
-                    sendMessage(chatId, response)
-                    checkNextQuestionAndSend(trainer, this, chatId)
-                }
-
-                else -> sendMessage(chatId, "Неизвестная команда: $callbackData")
+    fun handleCallback(chatId: Long, callbackData: String) {
+        when {
+            callbackData == CALLBACK_LEARN_WORDS -> {
+                checkNextQuestionAndSend(chatId)
             }
+            callbackData == CALLBACK_STATISTIC -> {
+                val stats = trainer.getStatistics()
+                val message =
+                    "Результат изучения: ${stats.learnedCount}/${stats.totalCount} (${stats.percentCount}%)"
+                sendMessage(chatId, message)
+            }
+            callbackData.startsWith(CALLBACK_DATA_ANSWER_PREFIX) -> {
+                val indexStr = callbackData.removePrefix(CALLBACK_DATA_ANSWER_PREFIX)
+                val userAnswerIndex = indexStr.toIntOrNull()
+                val isCorrect = trainer.checkAnswer(userAnswerIndex)
+                val response = if (isCorrect) "Правильно!" else "Неправильно"
+                sendMessage(chatId, response)
+                checkNextQuestionAndSend(chatId)
+            }
+            else -> sendMessage(chatId, "Неизвестная команда: $callbackData")
         }
     }
 
@@ -207,17 +205,14 @@ class TelegramBotService(private val botToken: String, private val trainer: Lear
         client.send(request, HttpResponse.BodyHandlers.ofString())
     }
 
-    fun checkNextQuestionAndSend(
-        trainer: LearnWordTrainer, telegramBotService: TelegramBotService, chatId: Long
-    ) {
+    fun checkNextQuestionAndSend(chatId: Long) {
         val question = trainer.getNextQuestion()
         if (question == null) {
-            telegramBotService.sendMessage(chatId, "Все слова в словаре выучены")
+            sendMessage(chatId, "Все слова в словаре выучены")
         } else {
-            telegramBotService.sendQuestion(chatId, question)
+            sendQuestion(chatId, question)
         }
     }
-
 }
 
 fun String.encodeUrl(): String = java.net.URLEncoder.encode(this, Charsets.UTF_8.name())
