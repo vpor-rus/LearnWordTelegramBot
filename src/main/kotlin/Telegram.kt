@@ -2,6 +2,7 @@ import additional.LearnWordTrainer
 import additional.Question
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -69,10 +70,9 @@ class TelegramBotService(private val botToken: String, private val trainer: Lear
     private val client = HttpClient.newBuilder().build()
     private var lastUpdateId = 0
 
-    val messageTextRegex: Regex = "\"text\":\"(.+?)\"".toRegex()
-    val updateIdRegex = "\"update_id\":(\\d+)".toRegex()
-    val chatIdRegex = "\"chat\"\\s*:\\s*\\{[^}]*\"id\"\\s*:\\s*(-*\\d+)".toRegex()
-    val dataRegex: Regex = "\"data\":\"(.+?)\"".toRegex()
+    val json = Json {
+        ignoreUnknownKeys = true
+    }
 
 
     fun getUpdates(): String {
