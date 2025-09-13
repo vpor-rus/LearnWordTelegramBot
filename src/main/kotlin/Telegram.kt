@@ -41,7 +41,7 @@ class TelegramBotService(private val botToken: String, private val trainer: Lear
 
     val messageTextRegex: Regex = "\"text\":\"(.+?)\"".toRegex()
     val updateIdRegex = "\"update_id\":(\\d+)".toRegex()
-    val chatIdRegex = "\"chat\"\\s*:\\s*\\{[^}]*\"id\"\\s*:\\s*(\\d+)".toRegex()
+    val chatIdRegex = "\"chat\"\\s*:\\s*\\{[^}]*\"id\"\\s*:\\s*(-*\\d+)".toRegex()
     val dataRegex: Regex = "\"data\":\"(.+?)\"".toRegex()
 
 
