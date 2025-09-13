@@ -1,13 +1,16 @@
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 @Serializable
 data class Update(
+    @SerialName("update_id")
     val update_id: Long,
 )
 
 @Serializable
 data class Response(
+    @SerialName("result")
     val result: List<Update>,
 )
 
