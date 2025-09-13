@@ -1,7 +1,9 @@
 import additional.LearnWordTrainer
 import additional.Question
+import kotlinx.serialization.Serializable
 
-data class Word(
+@Serializable
+ data class Word(
     val original: String,
     val translate: String,
     var correctAnswerCount: Int = 0,
