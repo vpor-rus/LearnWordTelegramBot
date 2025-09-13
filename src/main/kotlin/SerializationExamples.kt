@@ -2,33 +2,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-@Serializable
-data class Update(
-    @SerialName("update_id")
-    val update_id: Long,
-    @SerialName("message")
-    val message: Message? = null,
-    @SerialName("callback_query")
-    val callbackQuery: CallbackQuery? = null,
-)
 
-@Serializable
-data class Response(
-    @SerialName("result")
-    val result: List<Update>,
-)
-
-@Serializable
-data class Message(
-    @SerialName("text")
-    val text: String,
-)
-
-@Serializable
-data class CallbackQuery(
-    @SerialName("data")
-    val data: String,
-)
 
 fun main() {
 
