@@ -35,7 +35,7 @@ class LearnWordTrainer(private val learnedAnswerCounter: Int = 3, val numberVari
                 val correctAnswerCount = separateCell.getOrNull(2)?.toIntOrNull() ?: 0
 
                 val word = Word(
-                    original = original, translate = translate, correctAnswerCount = correctAnswerCount
+                    questionWord = original, translate = translate, correctAnswerCount = correctAnswerCount
                 )
                 dictionary.add(word)
             }
@@ -48,7 +48,7 @@ class LearnWordTrainer(private val learnedAnswerCounter: Int = 3, val numberVari
     fun saveDictionary(dictionary: List<Word>) {
 
         val fileWord = File("word.txt")
-        val lines = dictionary.map { "${it.original}|${it.translate}|${it.correctAnswerCount}" }
+        val lines = dictionary.map { "${it.questionWord}|${it.translate}|${it.correctAnswerCount}" }
         fileWord.writeText(lines.joinToString("\n"))
     }
 
