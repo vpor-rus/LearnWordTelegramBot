@@ -180,26 +180,7 @@ class TelegramBotService(private val botToken: String, private val trainer: Lear
 
     fun sendMenu(json: Json, chatId: Long) {
         val url = "$BASE_URL$botToken/sendMessage"
-   /*     val sendMenuBody = """
-            {
-              "chat_id": "$chatId",
-              "text": "Основное меню",
-              "reply_markup": {
-                "inline_keyboard": [
-                  [
-                    {
-                      "text": "Изучить слова",
-                      "callback_data": "$LEARN_WORDS_CLICKED"
-                    },
-                    {
-                      "text": "Статистика",
-                      "callback_data": "$STATISTIC_CLICKED"
-                    }
-                  ]
-                ]
-              }
-            }
-        """.trimIndent()*/
+
 
         val requestBody = SendMessageRequest(
             chatId = chatId,
@@ -236,17 +217,6 @@ class TelegramBotService(private val botToken: String, private val trainer: Lear
         """.trimIndent()
         }.joinToString(separator = ",")
 
-       /* val sendMenuBody = """
-        {
-          "chat_id": "$chatId",
-          "text": "${question.correctAnswer.questionWord}",
-          "reply_markup": {
-            "inline_keyboard": [
-              [ $optionsJson ]
-            ]
-          }
-        }
-    """.trimIndent()*/
 
         val requestBody = SendMessageRequest(
             chatId = chatId,
