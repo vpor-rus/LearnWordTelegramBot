@@ -128,6 +128,7 @@ class TelegramBotService(private val botToken: String, private val trainer: Lear
             }
 
             val chatId = update.message?.chat?.id ?: update.callbackQuery?.message?.chat?.id
+                ?: continue
             val text = update.message?.text
             val callbackData = update.callbackQuery?.data
 
