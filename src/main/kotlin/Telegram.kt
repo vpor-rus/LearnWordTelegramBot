@@ -66,7 +66,7 @@ data class ReplyMarkup(
 @Serializable
 data class InlineKeyBoard(
     @SerialName("callback_data")
-    val calbackData: String,
+    val callbackData: String,
     @SerialName("text")
     val text: String,
 )
@@ -186,14 +186,14 @@ class TelegramBotService(private val botToken: String, private val trainer: Lear
             chatId = chatId,
             text = "Основное меню",
             replyMarkup = ReplyMarkup(
-                ListOf(
-                    ListOf(
+                listOf(
+                    listOf(
                         InlineKeyBoard(
-                            calbackData = LEARN_WORDS_CLICKED,
+                            callbackData = LEARN_WORDS_CLICKED,
                             text = "Изучать слова"
                         ),
                         InlineKeyBoard(
-                            calbackData = STATISTIC_CLICKED,
+                            callbackData = STATISTIC_CLICKED,
                             text = "Статистика"
                         )
                     )
@@ -224,7 +224,7 @@ class TelegramBotService(private val botToken: String, private val trainer: Lear
             replyMarkup = ReplyMarkup(
                 listOf(question.variants.mapIndexed { index, word ->
                     InlineKeyBoard(
-                        calbackData = "$CALLBACK_DATA_ANSWER_PREFIX$index",
+                        callbackData = "$CALLBACK_DATA_ANSWER_PREFIX$index",
                         text = word.translate
                     )
                 })
@@ -245,7 +245,7 @@ class TelegramBotService(private val botToken: String, private val trainer: Lear
         if (question == null) {
             sendMessage(chatId, "Все слова в словаре выучены")
         } else {
-            sendQuestion(json, question)
+            sendQuestion(json, chatId, question)
         }
     }
 }
