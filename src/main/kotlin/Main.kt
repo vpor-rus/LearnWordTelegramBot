@@ -21,7 +21,6 @@ fun Question.asConsoleString(): String {
         0 - выйти в меню
     """.trimIndent()
 }
-}
 
 fun main() {
     val trainer = try {
