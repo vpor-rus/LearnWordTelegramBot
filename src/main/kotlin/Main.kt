@@ -10,9 +10,17 @@ import kotlinx.serialization.Serializable
 )
 
 fun Question.asConsoleString(): String {
-    val variants =
-        this.variants.mapIndexed { index: Int, word: Word -> "${index + 1} - ${word.translate}" }.joinToString("\n")
-    return this.correctAnswer.questionWord + "\n" + variants + "\n\n0 - выйти в меню"
+    val variants = this.variants.mapIndexed { index, word ->
+        "${index + 1} - ${word.translate}"
+    }.joinToString("\n")
+
+    return """
+        ${this.correctAnswer.questionWord}
+        $variants
+        
+        0 - выйти в меню
+    """.trimIndent()
+}
 }
 
 fun main() {
