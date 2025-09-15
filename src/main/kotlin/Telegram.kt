@@ -15,7 +15,6 @@ const val CMD_MENU = "menu"
 const val LEARN_WORDS_CLICKED = "learn_words_clicked"
 const val STATISTIC_CLICKED = "statistic_clicked"
 const val CALLBACK_DATA_ANSWER_PREFIX = "answer_"
-const val REQUIRED_VARIANTS_COUNT = 4
 
 @Serializable
 data class Update(
@@ -74,34 +73,6 @@ fun main(args: Array<String>) {
 
     fun String.encodeUrl() = URLEncoder.encode(this, Charsets.UTF_8.name())
 
-    fun ensureFourVariants(variants: List<additional.Word>): List<additional.Word> {
-        return if (variants.size >= REQUIRED_VARIANTS_COUNT) {
-            variants.take(REQUIRED_VARIANTS_COUNT)
-        } else {
-            val lastVariant = variants.lastOrNull() ?: additional.Word("", "")
-            variants + List(REQUIRED_VARIANTS_COUNT - variants.size) { lastVariant }
-        }
-    }
-
-    fun sendQuestion(chatId: Long, question: additional.Question) {
-        val ensuredVariants = ensureFourVariants(question.variants)
-        val requestBody = SendMessageRequest(
-            chatId = chatId,
-            text = question.correctAnswer.questionWord,
-            replyMarkup = ReplyMarkup(
-                listOf(ensuredVariants.mapIndexed { index, word ->
-                    InlineKeyBoard("$CALLBACK_DATA_ANSWER_PREFIX$index", word.translate)
-                })
-            )
-        )
-        val request = HttpRequest.newBuilder()
-            .uri(URI.create("$BASE_URL$botToken/sendMessage"))
-            .header("Content-Type", "application/json")
-            .POST(HttpRequest.BodyPublishers.ofString(json.encodeToString(requestBody)))
-            .build()
-        client.send(request, HttpResponse.BodyHandlers.ofString())
-    }
-
     while (true) {
         Thread.sleep(TIME_SLEEP)
 
@@ -145,7 +116,21 @@ fun main(args: Array<String>) {
                 }
                 callbackData == LEARN_WORDS_CLICKED -> {
                     trainer.getNextQuestion()?.let { question ->
-                        sendQuestion(chatId, question)
+                        val requestBody = SendMessageRequest(
+                            chatId = chatId,
+                            text = question.correctAnswer.questionWord,
+                            replyMarkup = ReplyMarkup(
+                                listOf(question.variants.mapIndexed { index, word ->
+                                    InlineKeyBoard("$CALLBACK_DATA_ANSWER_PREFIX$index", word.translate)
+                                })
+                            )
+                        )
+                        val request = HttpRequest.newBuilder()
+                            .uri(URI.create("$BASE_URL$botToken/sendMessage"))
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(json.encodeToString(requestBody)))
+                            .build()
+                        client.send(request, HttpResponse.BodyHandlers.ofString())
                     } ?: run {
                         val url = "$BASE_URL$botToken/sendMessage?chat_id=$chatId&text=${"Все слова в словаре выучены".encodeUrl()}"
                         val request = HttpRequest.newBuilder().uri(URI.create(url)).build()
@@ -168,7 +153,21 @@ fun main(args: Array<String>) {
                     client.send(request, HttpResponse.BodyHandlers.ofString())
 
                     trainer.getNextQuestion()?.let { question ->
-                        sendQuestion(chatId, question)
+                        val requestBody = SendMessageRequest(
+                            chatId = chatId,
+                            text = question.correctAnswer.questionWord,
+                            replyMarkup = ReplyMarkup(
+                                listOf(question.variants.mapIndexed { index, word ->
+                                    InlineKeyBoard("$CALLBACK_DATA_ANSWER_PREFIX$index", word.translate)
+                                })
+                            )
+                        )
+                        val requestNext = HttpRequest.newBuilder()
+                            .uri(URI.create("$BASE_URL$botToken/sendMessage"))
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(json.encodeToString(requestBody)))
+                            .build()
+                        client.send(requestNext, HttpResponse.BodyHandlers.ofString())
                     } ?: run {
                         val urlNext = "$BASE_URL$botToken/sendMessage?chat_id=$chatId&text=${"Все слова в словаре выучены".encodeUrl()}"
                         val requestNext = HttpRequest.newBuilder().uri(URI.create(urlNext)).build()
