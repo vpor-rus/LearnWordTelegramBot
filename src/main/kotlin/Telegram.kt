@@ -118,15 +118,15 @@ class TelegramBotService(private val botToken: String, private val trainer: Lear
         if (response.result.isEmpty()) return
 
         val sortedUpdates = response.result.sortedBy { it.updateId }
-        sortedUpdates.forEach { handleUpdate(it) }
+        sortedUpdates.forEach { handleUpdate(it, json, botToken, trainer) }
         lastUpdateId = sortedUpdates.last().updateId
     }
 
-    private fun handleUpdate(firstUpdate: Update) {
-        val chatId = firstUpdate.message?.chat?.id ?: firstUpdate.callbackQuery?.message
+    fun handleUpdate(update: Update, json: Json, botToken: String, trainer: LearnWordTrainer,) {
+        val chatId = update.message?.chat?.id ?: update.callbackQuery?.message
             ?.chat?.id ?: return
-        val message = firstUpdate.message?.text
-        val data = firstUpdate.callbackQuery?.data
+        val message = update.message?.text
+        val data = update.callbackQuery?.data
 
         when {
             message == CMD_HELLO -> sendMessage(chatId, "hello")
