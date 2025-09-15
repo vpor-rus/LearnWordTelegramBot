@@ -1,6 +1,3 @@
-package additional
-
-import Word
 import java.io.File
 
 data class Statistics(
