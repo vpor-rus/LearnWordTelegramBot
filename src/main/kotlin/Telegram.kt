@@ -123,7 +123,8 @@ class TelegramBotService(private val botToken: String, private val trainer: Lear
     }
 
     private fun handleUpdate(firstUpdate: Update) {
-        val chatId = firstUpdate.message?.chat?.id ?: firstUpdate.callbackQuery?.message?.chat?.id
+        val chatId = firstUpdate.message?.chat?.id ?: firstUpdate.callbackQuery?.message
+            ?.chat?.id ?: return
         val message = firstUpdate.message?.text
         val data = firstUpdate.callbackQuery?.data
 
