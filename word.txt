@@ -4,9 +4,9 @@ flow|поток|0
 update|обновить|0
 create|создать|0
 request|запрос|0
-compare|сравнивать|0
-pull|достать|0
-approve|одобрять|0
+compare|сравнивать|1
+pull|достать|1
+approve|одобрять|1
 merge|слияние|0
 example|пример|0
 notes|заметка|1
@@ -25,4 +25,4 @@ quantity|количество|0
 expected|ожидаемый|0
 response|ответ|1
 send|посылать|0
-
+||0

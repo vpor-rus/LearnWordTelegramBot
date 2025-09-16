@@ -1,6 +1,3 @@
-package additional
-
-import Word
 import java.io.File
 
 data class Statistics(
@@ -16,7 +13,7 @@ data class Question(
 
 class LearnWordTrainer(private val learnedAnswerCounter: Int = 3, val numberVariants: Int = 4) {
 
-    private var question: Question? = null
+    internal var question: Question? = null
     val dictionary = loadDictionary()
 
 
