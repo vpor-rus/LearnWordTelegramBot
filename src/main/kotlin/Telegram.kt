@@ -9,6 +9,7 @@ import java.net.http.HttpResponse
 const val TIME_SLEEP: Long = 2000
 const val LEARN_WORDS_CLICKED = "learn_words_clicked"
 const val STATISTIC_CLICKED = "statistic_clicked"
+const val RESET_CLICKED = "reset_clicked"
 const val CALLBACK_DATA_ANSWER_PREFIX = "answer_"
 
 @Serializable
@@ -82,7 +83,6 @@ fun handleUpdate(update: Update, json: Json, botToken: String, trainers: HashMap
     val chatId = update.message?.chat?.id ?: update.callbackQuery?.message?.chat?.id ?: return
     val data = update.callbackQuery?.data
 
-    // Получаем или создаем тренер для текущего пользователя
     val trainer = trainers.getOrPut(chatId) {
         LearnWordTrainer("$chatId.txt")
     }
@@ -116,6 +116,11 @@ fun handleUpdate(update: Update, json: Json, botToken: String, trainers: HashMap
             json, botToken, chatId,
             "Выучено ${statistics.learnedCount} из ${statistics.totalCount} слов | ${statistics.percentCount}%"
         )
+    }
+
+    if (data == RESET_CLICKED) {
+        trainer.resetProgress()
+        sendMessage(json, botToken, chatId, "Прогресс сброшен")
     }
 }
 
@@ -159,13 +164,13 @@ fun sendMenu(json: Json, botToken: String, chatId: Long): String {
         replyMarkup = ReplyMarkup(
             inlineKeyboard = listOf(
                 listOf(
+                    InlineKeyBoard( callbackData = LEARN_WORDS_CLICKED, text = "Изучать слова"),
+                    InlineKeyBoard( callbackData = STATISTIC_CLICKED,   text = "Статистика"),
+                ),
+                listOf(
                     InlineKeyBoard(
-                        callbackData = LEARN_WORDS_CLICKED,
-                        text = "Изучать слова"
-                    ),
-                    InlineKeyBoard(
-                        callbackData = STATISTIC_CLICKED,
-                        text = "Статистика"
+                        callbackData = RESET_CLICKED,
+                        text = "Сбросить прогресс"
                     )
                 )
             )

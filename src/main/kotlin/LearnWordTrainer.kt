@@ -47,7 +47,7 @@ class LearnWordTrainer(
         }
     }
 
-    fun saveDictionary(dictionary: List<Word>) {
+    fun saveDictionary() {
 
         val fileWord = File(fileName)
         val lines = dictionary.map { "${it.questionWord}|${it.translate}|${it.correctAnswerCount}" }
@@ -91,11 +91,16 @@ class LearnWordTrainer(
 
             if (correctAnswerId == userAnswerIndex) {
                 it.correctAnswer.correctAnswerCount++
-                saveDictionary(dictionary)
+                saveDictionary()
                 true
             } else {
                 false
             }
         } ?: false
+    }
+
+    fun resetProgress() {
+        dictionary.forEach { it.correctAnswerCount = 0 }
+        saveDictionary()
     }
 }
