@@ -78,20 +78,16 @@ fun main(args: Array<String>) {
 }
 
 fun handleUpdate(update: Update, json: Json, botToken: String, trainers: HashMap<Long, LearnWordTrainer>) {
-
     val message = update.message?.text
     val chatId = update.message?.chat?.id ?: update.callbackQuery?.message?.chat?.id ?: return
     val data = update.callbackQuery?.data
 
-    val translate = trainers.getOrPut (chatId) {
+    // Получаем или создаем тренер для текущего пользователя
+    val trainer = trainers.getOrPut(chatId) {
         LearnWordTrainer("$chatId.txt")
     }
 
-    if (message?.lowercase() == "/start") {
-        sendMenu(json, botToken, chatId)
-    }
-
-    if (message?.lowercase() == "menu") {
+    if (message?.lowercase() == "/start" || message?.lowercase() == "menu") {
         sendMenu(json, botToken, chatId)
     }
 
@@ -99,7 +95,7 @@ fun handleUpdate(update: Update, json: Json, botToken: String, trainers: HashMap
         checkNextQuestionAndSend(json, trainer, botToken, chatId)
     }
 
-    if (data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX)) {
+    if (data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) == true) {
         val answerId = data.substringAfter(CALLBACK_DATA_ANSWER_PREFIX).toInt()
         if (trainer.checkAnswer(answerId)) {
             sendMessage(json, botToken, chatId, "Правильно")
@@ -108,7 +104,7 @@ fun handleUpdate(update: Update, json: Json, botToken: String, trainers: HashMap
                 json,
                 botToken,
                 chatId,
-                "Не правильно: ${trainer.question?.correctAnswer?.questionWord} - ${trainer.question?.correctAnswer?.translate}"
+                "Неправильно: ${trainer.question?.correctAnswer?.questionWord} - ${trainer.question?.correctAnswer?.translate}"
             )
         }
         checkNextQuestionAndSend(json, trainer, botToken, chatId)
