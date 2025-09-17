@@ -1,12 +1,10 @@
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
-import kotlin.compareTo
 
 const val TIME_SLEEP: Long = 2000
 const val LEARN_WORDS_CLICKED = "learn_words_clicked"
@@ -61,6 +59,7 @@ fun main(args: Array<String>) {
     val botToken = args[0]
     var lastUpdateId = 0L
     val json = Json { ignoreUnknownKeys = true }
+    val trainers = HashMap<Long, LearnWordTrainer>()
     val trainer = LearnWordTrainer()
 
     while (true) {
@@ -71,32 +70,36 @@ fun main(args: Array<String>) {
         val response: Response = json.decodeFromString(responseString)
         if (response.result.isEmpty()) continue
         val sortedUpdates = response.result.sortedBy { it.updateId }
-        sortedUpdates.forEach { handleUpdate(it, json, botToken, trainer) }
+        sortedUpdates.forEach { handleUpdate(it, json, botToken, trainers) }
         lastUpdateId = sortedUpdates.last().updateId + 1
 
 
     }
 }
 
-fun handleUpdate(update: Update, json: Json, botToken: String, trainer: LearnWordTrainer) {
+fun handleUpdate(update: Update, json: Json, botToken: String, trainers: HashMap<Long, LearnWordTrainer>) {
 
     val message = update.message?.text
-    val chatId = update.message?.chat?.id ?: update.callbackQuery?.message?.chat?.id
+    val chatId = update.message?.chat?.id ?: update.callbackQuery?.message?.chat?.id ?: return
     val data = update.callbackQuery?.data
 
-    if (message?.lowercase() == "/start" && chatId != null) {
+    val translate = trainers.getOrPut (chatId) {
+        LearnWordTrainer("$chatId.txt")
+    }
+
+    if (message?.lowercase() == "/start") {
         sendMenu(json, botToken, chatId)
     }
 
-    if (message?.lowercase() == "menu" && chatId != null) {
+    if (message?.lowercase() == "menu") {
         sendMenu(json, botToken, chatId)
     }
 
-    if (data == LEARN_WORDS_CLICKED && chatId != null) {
+    if (data == LEARN_WORDS_CLICKED) {
         checkNextQuestionAndSend(json, trainer, botToken, chatId)
     }
 
-    if (data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) == true && chatId != null) {
+    if (data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX)) {
         val answerId = data.substringAfter(CALLBACK_DATA_ANSWER_PREFIX).toInt()
         if (trainer.checkAnswer(answerId)) {
             sendMessage(json, botToken, chatId, "Правильно")
@@ -111,7 +114,7 @@ fun handleUpdate(update: Update, json: Json, botToken: String, trainer: LearnWor
         checkNextQuestionAndSend(json, trainer, botToken, chatId)
     }
 
-    if (data == STATISTIC_CLICKED && chatId != null) {
+    if (data == STATISTIC_CLICKED) {
         val statistics: Statistics = trainer.getStatistics()
         sendMessage(
             json, botToken, chatId,

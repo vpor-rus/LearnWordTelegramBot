@@ -14,7 +14,7 @@ data class Question(
 class LearnWordTrainer(
     private  val fileName: String = "words.txt",
     private val learnedAnswerCounter: Int = 3,
-    val numberVariants: Int = 4
+    val countOfQuestionWords: Int = 4
 ) {
     internal var question: Question? = null
     val dictionary = loadDictionary()
@@ -69,11 +69,11 @@ class LearnWordTrainer(
     fun getNextQuestion(): Question? {
         val notLearnedList = dictionary.filter { it.correctAnswerCount < learnedAnswerCounter }
         if (notLearnedList.isEmpty()) return null
-        val questionWord = if (notLearnedList.size < numberVariants) {
+        val questionWord = if (notLearnedList.size < countOfQuestionWords) {
             val learnedList = dictionary.filter { it.correctAnswerCount >= learnedAnswerCounter }.shuffled()
-            notLearnedList.shuffled() + learnedList.take(numberVariants - notLearnedList.size)
+            notLearnedList.shuffled() + learnedList.take(countOfQuestionWords - notLearnedList.size)
         } else {
-            notLearnedList.shuffled().take(numberVariants)
+            notLearnedList.shuffled().take(countOfQuestionWords)
         }.shuffled()
 
         val correctAnswerWord = questionWord.random()

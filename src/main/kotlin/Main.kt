@@ -22,7 +22,7 @@ fun Question.asConsoleString(): String {
 
 fun main() {
     val trainer = try {
-        LearnWordTrainer()
+        LearnWordTrainer(learnedAnswerCounter = 3, countOfQuestionWords = 4)
     } catch (e: Exception) {
         println ("Невозможно загрузить словарь")
         return
