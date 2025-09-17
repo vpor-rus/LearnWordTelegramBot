@@ -57,13 +57,10 @@ data class InlineKeyBoard(
 )
 
 fun main(args: Array<String>) {
+
     val botToken = args[0]
     var lastUpdateId = 0L
-
-    val json = Json {
-        ignoreUnknownKeys = true
-    }
-
+    val json = Json { ignoreUnknownKeys = true }
     val trainer = LearnWordTrainer()
 
     while (true) {
