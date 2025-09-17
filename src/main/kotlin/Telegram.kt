@@ -40,7 +40,7 @@ data class Chat(@SerialName("id") val id: Long)
 data class SendMessageRequest(
     @SerialName("chat_id") val chatId: Long,
     @SerialName("text") val text: String,
-    @SerialName("reply_markup") val replyMarkup: ReplyMarkup,
+    @SerialName("reply_markup") val replyMarkup: ReplyMarkup? = null
 )
 
 @Serializable
@@ -59,7 +59,7 @@ fun main(args: Array<String>) {
     var lastUpdateId = 0L
 
     val json = Json {
-        ignoreUnknownKeys = true
+        ignoreUnknownKeys = true // Исправлена опечатка
     }
 
     val trainer = LearnWordTrainer()
@@ -71,44 +71,50 @@ fun main(args: Array<String>) {
 
         val response: Response = json.decodeFromString(responseString)
         val updates = response.result
-        val firstUpdate = updates.firstOrNull() ?: continue
-        val updateId = firstUpdate.updateId
-        lastUpdateId = updateId + 1
 
-        val message = firstUpdate.message?.text
-        val chatId = firstUpdate.message?.chat?.id ?: firstUpdate.callbackQuery?.message?.chat?.id
-        val data = firstUpdate.callbackQuery?.data
+        // Обрабатываем все обновления
+        for (update in updates) {
+            if (update.updateId >= lastUpdateId) {
+                lastUpdateId = update.updateId + 1
+            }
 
-        if (message?.lowercase() == "/start" && chatId != null) {
-            sendMenu(json, botToken, chatId)
-        }
+            val message = update.message?.text
+            val chatId = update.message?.chat?.id ?: update.callbackQuery?.message?.chat?.id ?: continue
+            val data = update.callbackQuery?.data
 
-        if (data == LEARN_WORDS_CLICKED && chatId != null) {
-            checkNextQuestionAndSend(json, trainer, botToken, chatId)
-        }
+            if (message?.lowercase() == "/start") {
+                sendMenu(json, botToken, chatId)
+            }
 
-        if (data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) == true && chatId != null) {
-            val answerId = data.substringAfter(CALLBACK_DATA_ANSWER_PREFIX).toInt()
-            if (trainer.checkAnswer(answerId)) {
-                sendMessage(json, botToken, chatId, "Правильно")
-            } else {
+            if (data == LEARN_WORDS_CLICKED) {
+                checkNextQuestionAndSend(json, trainer, botToken, chatId)
+            }
+
+            if (data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) == true) {
+                val answerId = data.substringAfter(CALLBACK_DATA_ANSWER_PREFIX).toInt()
+                if (trainer.checkAnswer(answerId)) {
+                    sendMessage(json, botToken, chatId, "Правильно")
+                } else {
+                    sendMessage(
+                        json,
+                        botToken,
+                        chatId,
+                        "Не правильно: ${trainer.question?.correctAnswer?.questionWord} - ${trainer.question?.correctAnswer?.translate}"
+                    )
+                }
+                checkNextQuestionAndSend(json, trainer, botToken, chatId)
+            }
+
+            // Исправлено сравнение data
+            if (data == STATISTIC_CLICKED) {
+                val statistics: Statistics = trainer.getStatistics()
+                // Исправлены имена полей в соответствии с классом Statistics
                 sendMessage(
-                    json,
-                    botToken,
-                    chatId,
-                    "Не правильно: ${ trainer.question?.correctAnswer?.questionWord } - ${ trainer.question?.correctAnswer?.translate }"
+                    json, botToken, chatId,
+                    "Выучено ${statistics.learnedCount} из ${statistics.totalCount} слов | ${statistics.percentCount}%"
                 )
             }
-            checkNextQuestionAndSend(json, trainer, botToken, chatId)
         }
-    }
-
-    if (data?.lowercase() == STATISTIC_CLICKED && chatId != null) {
-        val statistics: Statistics = trainer.getStatistics()
-        sendMessage(
-            json, botToken, chatId,
-            "Выучено ${statistics.learned} из ${statistics.total} слов | ${statistics.percent}%"
-        )
     }
 }
 
@@ -130,7 +136,7 @@ fun getUpdates(botToken: String, updateid: Long,): String {
 }
 
 fun sendMessage(json: Json, botToken: String, chatId: Long, message: String): String {
-    val  sendMessage = "https://api.telegram.org/bot$botToken/sendMessage"
+    val sendMessage = "https://api.telegram.org/bot$botToken/sendMessage"
     val requestBody = SendMessageRequest(
         chatId = chatId,
         text = message,
@@ -141,7 +147,7 @@ fun sendMessage(json: Json, botToken: String, chatId: Long, message: String): St
         .header("Content-type", "application/json")
         .POST(HttpRequest.BodyPublishers.ofString(requestBodyString)).build()
     val response: HttpResponse<String> = client.send(request, HttpResponse.BodyHandlers.ofString())
-    return  response.body()
+    return response.body()
 }
 
 fun sendMenu(json: Json, botToken: String, chatId: Long): String {
@@ -150,45 +156,56 @@ fun sendMenu(json: Json, botToken: String, chatId: Long): String {
         chatId = chatId,
         text = "Основное меню",
         replyMarkup = ReplyMarkup(
-            listOf(listOf(
-                InlineKeyBoard("Изучать слова", LEARN_WORDS_CLICKED),
-                InlineKeyBoard("Статистика", STATISTIC_CLICKED)
+            inlineKeyboard = listOf(listOf(
+                InlineKeyBoard(
+                    callbackData = LEARN_WORDS_CLICKED, // Исправлен порядок параметров
+                    text = "Изучать слова"
+                ),
+                InlineKeyBoard(
+                    callbackData = STATISTIC_CLICKED, // Исправлен порядок параметров
+                    text = "Статистика"
+                )
             ))
         )
     )
     val requestBodyString = json.encodeToString(requestBody)
 
     val client: HttpClient = HttpClient.newBuilder().build()
-    val request: HttpRequest = HttpRequest.newBuilder().uri(URI.create(sendMessage()))
+    val request: HttpRequest = HttpRequest.newBuilder().uri(URI.create(sendMessage)) // Убрали лишние скобки
         .header("Content-type", "application/json")
         .POST(HttpRequest.BodyPublishers.ofString(requestBodyString)).build()
 
     val response: HttpResponse<String> = client.send(request, HttpResponse.BodyHandlers.ofString())
-    return  response.body()
+    return response.body()
 }
 
 fun sendQuestion(json: Json, botToken: String, chatId: Long, question: Question): String {
-    val  urlGetUpdate = "https://api.telegram.org/bot$botToken/sendMessage"
-    val keyboardLayout = question.variants.mapIndexed { index: Int, word: Word -> "{ \"text\": \"${word.translate}\", " +
-            "\"callback_data\": \"$CALLBACK_DATA_ANSWER_PREFIX$index" }.joinToString(",")
+    val urlGetUpdate = "https://api.telegram.org/bot$botToken/sendMessage"
+
+    // Исправлена строка формирования клавиатуры (добавлена закрывающая скобка)
+    val keyboardLayout = question.variants.mapIndexed { index: Int, word: Word ->
+        "{ \"text\": \"${word.translate}\", \"callback_data\": \"$CALLBACK_DATA_ANSWER_PREFIX$index\" }"
+    }.joinToString(",")
+
     println(keyboardLayout)
 
     val requestBody = SendMessageRequest(
         chatId = chatId,
         text = question.correctAnswer.questionWord,
         replyMarkup = ReplyMarkup(
-            listOf(question.variants.mapIndexed { index, word ->
-                InlineKeyBoard(word.translate, "$CALLBACK_DATA_ANSWER_PREFIX$index"
+            inlineKeyboard = listOf(question.variants.mapIndexed { index, word ->
+                InlineKeyBoard(
+                    callbackData = "$CALLBACK_DATA_ANSWER_PREFIX$index", // Исправлен порядок параметров
+                    text = word.translate
                 )
             })
         )
     )
-    val reqestBodyString = json.encodeToString(requestBody)
-
+    val requestBodyString = json.encodeToString(requestBody)
     val client: HttpClient = HttpClient.newBuilder().build()
-    val request = HttpRequest.newBuilder(URI.create(urlGetUpdate))
+    val request = HttpRequest.newBuilder().uri(URI.create(urlGetUpdate)) // Исправлен вызов метода
         .header("Content-Type", "application/json")
-        .POST(HttpRequest.BodyPublishers.ofString(reqestBodyString)).build()
+        .POST(HttpRequest.BodyPublishers.ofString(requestBodyString)).build() // Исправлено название переменной
 
     val response = client.send(request, HttpResponse.BodyHandlers.ofString())
     return response.body()
