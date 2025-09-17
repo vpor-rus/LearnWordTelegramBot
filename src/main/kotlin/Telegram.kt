@@ -6,6 +6,7 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import kotlin.compareTo
 
 const val TIME_SLEEP: Long = 2000
 const val LEARN_WORDS_CLICKED = "learn_words_clicked"
@@ -71,57 +72,59 @@ fun main(args: Array<String>) {
         println(responseString)
 
         val response: Response = json.decodeFromString(responseString)
-        val updates = response.result
+        if (response.result.isEmpty()) continue
+        val sortedUpdates = response.result.sortedBy { it.updateId }
+        sortedUpdates.forEach { handleUpdate(it, json, botToken, trainer) }
+        lastUpdateId = sortedUpdates.last().updateId + 1
 
-        for (update in updates) {
-            if (update.updateId >= lastUpdateId) {
-                lastUpdateId = update.updateId + 1
-            }
 
-            val message = update.message?.text
-            val chatId = update.message?.chat?.id ?: update.callbackQuery?.message?.chat?.id ?: continue
-            val data = update.callbackQuery?.data
-
-            if (message?.lowercase() == "/start") {
-                sendMenu(json, botToken, chatId)
-            }
-
-            if (message?.lowercase() == "menu") {
-                sendMenu(json, botToken, chatId)
-            }
-
-            if (data == LEARN_WORDS_CLICKED) {
-                checkNextQuestionAndSend(json, trainer, botToken, chatId)
-            }
-
-            if (data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) == true) {
-                val answerId = data.substringAfter(CALLBACK_DATA_ANSWER_PREFIX).toInt()
-                if (trainer.checkAnswer(answerId)) {
-                    sendMessage(json, botToken, chatId, "Правильно")
-                } else {
-                    sendMessage(
-                        json,
-                        botToken,
-                        chatId,
-                        "Не правильно: ${trainer.question?.correctAnswer?.questionWord} - ${trainer.question?.correctAnswer?.translate}"
-                    )
-                }
-                checkNextQuestionAndSend(json, trainer, botToken, chatId)
-            }
-
-            if (data == STATISTIC_CLICKED) {
-                val statistics: Statistics = trainer.getStatistics()
-                sendMessage(
-                    json, botToken, chatId,
-                    "Выучено ${statistics.learnedCount} из ${statistics.totalCount} слов | ${statistics.percentCount}%"
-                )
-            }
-        }
     }
 }
 
-private fun checkNextQuestionAndSend(json: Json, trainer: LearnWordTrainer, botToken: String, chatId: Long) {
-    val  question = trainer.getNextQuestion()
+fun handleUpdate(update: Update, json: Json, botToken: String, trainer: LearnWordTrainer) {
+
+    val message = update.message?.text
+    val chatId = update.message?.chat?.id ?: update.callbackQuery?.message?.chat?.id
+    val data = update.callbackQuery?.data
+
+    if (message?.lowercase() == "/start" && chatId != null) {
+        sendMenu(json, botToken, chatId)
+    }
+
+    if (message?.lowercase() == "menu" && chatId != null) {
+        sendMenu(json, botToken, chatId)
+    }
+
+    if (data == LEARN_WORDS_CLICKED && chatId != null) {
+        checkNextQuestionAndSend(json, trainer, botToken, chatId)
+    }
+
+    if (data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) == true && chatId != null) {
+        val answerId = data.substringAfter(CALLBACK_DATA_ANSWER_PREFIX).toInt()
+        if (trainer.checkAnswer(answerId)) {
+            sendMessage(json, botToken, chatId, "Правильно")
+        } else {
+            sendMessage(
+                json,
+                botToken,
+                chatId,
+                "Не правильно: ${trainer.question?.correctAnswer?.questionWord} - ${trainer.question?.correctAnswer?.translate}"
+            )
+        }
+        checkNextQuestionAndSend(json, trainer, botToken, chatId)
+    }
+
+    if (data == STATISTIC_CLICKED && chatId != null) {
+        val statistics: Statistics = trainer.getStatistics()
+        sendMessage(
+            json, botToken, chatId,
+            "Выучено ${statistics.learnedCount} из ${statistics.totalCount} слов | ${statistics.percentCount}%"
+        )
+    }
+}
+
+fun checkNextQuestionAndSend(json: Json, trainer: LearnWordTrainer, botToken: String, chatId: Long) {
+    val question = trainer.getNextQuestion()
     if (question == null) {
         sendMessage(json, botToken, chatId, "Вы выучили все слова в базе")
     } else {
@@ -158,16 +161,18 @@ fun sendMenu(json: Json, botToken: String, chatId: Long): String {
         chatId = chatId,
         text = "Основное меню",
         replyMarkup = ReplyMarkup(
-            inlineKeyboard = listOf(listOf(
-                InlineKeyBoard(
-                    callbackData = LEARN_WORDS_CLICKED,
-                    text = "Изучать слова"
-                ),
-                InlineKeyBoard(
-                    callbackData = STATISTIC_CLICKED,
-                    text = "Статистика"
+            inlineKeyboard = listOf(
+                listOf(
+                    InlineKeyBoard(
+                        callbackData = LEARN_WORDS_CLICKED,
+                        text = "Изучать слова"
+                    ),
+                    InlineKeyBoard(
+                        callbackData = STATISTIC_CLICKED,
+                        text = "Статистика"
+                    )
                 )
-            ))
+            )
         )
     )
     val requestBodyString = json.encodeToString(requestBody)
@@ -211,3 +216,4 @@ fun sendQuestion(json: Json, botToken: String, chatId: Long, question: Question)
     val response = client.send(request, HttpResponse.BodyHandlers.ofString())
     return response.body()
 }
+
