@@ -60,7 +60,7 @@ fun main(args: Array<String>) {
     var lastUpdateId = 0L
 
     val json = Json {
-        ignoreUnknownKeys = true // Исправлена опечатка
+        ignoreUnknownKeys = true
     }
 
     val trainer = LearnWordTrainer()
@@ -109,10 +109,8 @@ fun main(args: Array<String>) {
                 checkNextQuestionAndSend(json, trainer, botToken, chatId)
             }
 
-            // Исправлено сравнение data
             if (data == STATISTIC_CLICKED) {
                 val statistics: Statistics = trainer.getStatistics()
-                // Исправлены имена полей в соответствии с классом Statistics
                 sendMessage(
                     json, botToken, chatId,
                     "Выучено ${statistics.learnedCount} из ${statistics.totalCount} слов | ${statistics.percentCount}%"
