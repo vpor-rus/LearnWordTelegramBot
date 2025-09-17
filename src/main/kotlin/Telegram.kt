@@ -1,5 +1,6 @@
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.net.URI
 import java.net.http.HttpClient
@@ -72,7 +73,6 @@ fun main(args: Array<String>) {
         val response: Response = json.decodeFromString(responseString)
         val updates = response.result
 
-        // Обрабатываем все обновления
         for (update in updates) {
             if (update.updateId >= lastUpdateId) {
                 lastUpdateId = update.updateId + 1
@@ -83,6 +83,10 @@ fun main(args: Array<String>) {
             val data = update.callbackQuery?.data
 
             if (message?.lowercase() == "/start") {
+                sendMenu(json, botToken, chatId)
+            }
+
+            if (message?.lowercase() == "menu") {
                 sendMenu(json, botToken, chatId)
             }
 
@@ -127,12 +131,12 @@ private fun checkNextQuestionAndSend(json: Json, trainer: LearnWordTrainer, botT
     }
 }
 
-fun getUpdates(botToken: String, updateid: Long,): String {
+fun getUpdates(botToken: String, updateid: Long): String {
     val urlGetUpdate = "https://api.telegram.org/bot$botToken/getUpdates?offset=$updateid"
     val client: HttpClient = HttpClient.newBuilder().build()
     val request: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlGetUpdate)).build()
     val response: HttpResponse<String> = client.send(request, HttpResponse.BodyHandlers.ofString())
-    return  response.body()
+    return response.body()
 }
 
 fun sendMessage(json: Json, botToken: String, chatId: Long, message: String): String {
@@ -158,11 +162,11 @@ fun sendMenu(json: Json, botToken: String, chatId: Long): String {
         replyMarkup = ReplyMarkup(
             inlineKeyboard = listOf(listOf(
                 InlineKeyBoard(
-                    callbackData = LEARN_WORDS_CLICKED, // Исправлен порядок параметров
+                    callbackData = LEARN_WORDS_CLICKED,
                     text = "Изучать слова"
                 ),
                 InlineKeyBoard(
-                    callbackData = STATISTIC_CLICKED, // Исправлен порядок параметров
+                    callbackData = STATISTIC_CLICKED,
                     text = "Статистика"
                 )
             ))
@@ -182,7 +186,6 @@ fun sendMenu(json: Json, botToken: String, chatId: Long): String {
 fun sendQuestion(json: Json, botToken: String, chatId: Long, question: Question): String {
     val urlGetUpdate = "https://api.telegram.org/bot$botToken/sendMessage"
 
-    // Исправлена строка формирования клавиатуры (добавлена закрывающая скобка)
     val keyboardLayout = question.variants.mapIndexed { index: Int, word: Word ->
         "{ \"text\": \"${word.translate}\", \"callback_data\": \"$CALLBACK_DATA_ANSWER_PREFIX$index\" }"
     }.joinToString(",")
@@ -195,7 +198,7 @@ fun sendQuestion(json: Json, botToken: String, chatId: Long, question: Question)
         replyMarkup = ReplyMarkup(
             inlineKeyboard = listOf(question.variants.mapIndexed { index, word ->
                 InlineKeyBoard(
-                    callbackData = "$CALLBACK_DATA_ANSWER_PREFIX$index", // Исправлен порядок параметров
+                    callbackData = "$CALLBACK_DATA_ANSWER_PREFIX$index",
                     text = word.translate
                 )
             })
@@ -203,11 +206,10 @@ fun sendQuestion(json: Json, botToken: String, chatId: Long, question: Question)
     )
     val requestBodyString = json.encodeToString(requestBody)
     val client: HttpClient = HttpClient.newBuilder().build()
-    val request = HttpRequest.newBuilder().uri(URI.create(urlGetUpdate)) // Исправлен вызов метода
+    val request = HttpRequest.newBuilder().uri(URI.create(urlGetUpdate))
         .header("Content-Type", "application/json")
-        .POST(HttpRequest.BodyPublishers.ofString(requestBodyString)).build() // Исправлено название переменной
+        .POST(HttpRequest.BodyPublishers.ofString(requestBodyString)).build()
 
     val response = client.send(request, HttpResponse.BodyHandlers.ofString())
     return response.body()
 }
-
