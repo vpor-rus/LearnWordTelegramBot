@@ -28,7 +28,6 @@ name: Build and Publish
          
          - name: Find and copy JAR file
            run: |
-             # Ищем JAR-файл в любом месте директории build
              JAR_PATH=$(find build -name "*-all.jar" -o -name "*.jar" | grep -v "api" | head -n 1)
              if [ -z "$JAR_PATH" ]; then
                echo "No JAR file found!"
@@ -55,3 +54,4 @@ name: Build and Publish
              password: ${{ secrets.SSH_PASSWORD }}
              source: words.txt
              target: /root
+
