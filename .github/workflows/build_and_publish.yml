@@ -14,17 +14,17 @@ name: Build and Publish
            uses: actions/setup-java@v3
            with:
              distribution: 'temurin'
-             java-version: '22'
+             java-version: '23'
          
          - name: Build with Gradle
            run: |
              chmod +x ./gradlew
              ./gradlew shadowJar --info
          
-         - name: List build directory
-           run: |
-             echo "Listing build directory:"
-             find build -type f | grep jar
+         name: List build directory
+     run: |
+       echo "Listing all files in build directory:"
+       find build -type f | sort
          
          - name: Copy JAR file
            run: |
