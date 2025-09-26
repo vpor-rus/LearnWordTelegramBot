@@ -12,19 +12,19 @@ class FileUserDictionary(
     }
 
     override fun getNumOfLearnedWords(): Int {
-        return dictionary.count { it.correctAnswerCount &gt;= learningThreshold }
+        return dictionary.count { it.correctAnswerCount >= learningThreshold }
     }
 
     override fun getSize(): Int {
         return dictionary.size
     }
 
-    override fun getLearnedWords(): List&lt;Word&gt; {
-        return dictionary.filter { it.correctAnswerCount &gt;= learningThreshold }
+    override fun getLearnedWords(): List<Word> {
+        return dictionary.filter { it.correctAnswerCount >= learningThreshold }
     }
 
-    override fun getUnlearnedWords(): List&lt;Word&gt; {
-        return dictionary.filter { it.correctAnswerCount &lt; learningThreshold }
+    override fun getUnlearnedWords(): List<Word> {
+        return dictionary.filter { it.correctAnswerCount < learningThreshold }
     }
 
     override fun setCorrectAnswersCount(word: String, correctAnswersCount: Int) {
@@ -37,13 +37,13 @@ class FileUserDictionary(
         saveDictionary()
     }
 
-    private fun loadDictionary(): MutableList&lt;Word&gt; {
+    private fun loadDictionary(): MutableList<Word> {
         val wordFile = File(fileName)
         if (!wordFile.exists()) {
             File("word.txt").copyTo(wordFile)
         }
         val lines = wordFile.readLines()
-        val dictionary = mutableListOf&lt;Word&gt;()
+        val dictionary = mutableListOf<Word>()
 
         for (line in lines) {
             val separateCell = line.split("|")
