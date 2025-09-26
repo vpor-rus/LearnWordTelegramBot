@@ -20,6 +20,7 @@ class LearnWordTrainer(
     val dictionary = loadDictionary()
 
 
+
     fun loadDictionary(): List<Word> {
         try {
 
