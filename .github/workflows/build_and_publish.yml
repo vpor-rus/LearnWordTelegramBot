@@ -1,30 +1,36 @@
 name: Build and Publish
-
 on:
   push:
     branches:
-      - master
-
+      - master # имя основной ветки
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
-
+        uses: actions/checkout@v4
+      
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '22'
-
+          java-version: '22'  # Обновлено до JDK 22
+      
       - name: Build with Gradle
-        run: ./gradlew shadowJar
-
+        run: |
+          chmod +x ./gradlew
+          ./gradlew shadowJar --info  # Добавлен флаг --info для более подробного вывода
+      
+      - name: List build directory
+        run: find build -type f -name "*.jar"  # Найдёт все JAR-файлы в директории build
+      
       - name: Rename file
-        run: mv build/libs/EnglishWordsBot-1.0-SNAPSHOT-all.jar bot.jar
-
+        run: |
+          # Используем шаблон для поиска JAR-файла
+          JAR_PATH=$(find build -type f -name "*-all.jar" | head -n 1)
+          echo "Found JAR file: $JAR_PATH"
+          cp "$JAR_PATH" bot.jar
+      
       - name: Deploy jar to VPS
         uses: appleboy/scp-action@master
         with:
@@ -33,7 +39,7 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           source: bot.jar
           target: /root
-
+      
       - name: Deploy words.txt to VPS
         uses: appleboy/scp-action@master
         with:
@@ -42,12 +48,3 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           source: words.txt
           target: /root
-
-      - name: Restart Remote Service
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username:  ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          script: |
-            systemctl restart english-learning-bot
