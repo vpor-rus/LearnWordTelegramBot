@@ -14,7 +14,7 @@ name: Build and Publish
            uses: actions/setup-java@v3
            with:
              distribution: 'temurin'
-             java-version: '23'
+             java-version: '22'
          
          - name: Build with Gradle
            run: |
