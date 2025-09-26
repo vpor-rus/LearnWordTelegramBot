@@ -21,21 +21,22 @@ name: Build and Publish
              chmod +x ./gradlew
              ./gradlew shadowJar --info
          
-         name: List build directory
-     run: |
-       echo "Listing all files in build directory:"
-       find build -type f | sort
-         
-         - name: Copy JAR file
+         - name: Debug - List all files in build directory
            run: |
-             # Находим JAR-файл и копируем его
-             JAR_PATH=$(find build -type f -name "*-all.jar" | head -n 1)
+             echo "Listing ALL files in build directory:"
+             find build -type f
+         
+         - name: Find and copy JAR file
+           run: |
+             # Ищем JAR-файл в любом месте директории build
+             JAR_PATH=$(find build -name "*-all.jar" -o -name "*.jar" | grep -v "api" | head -n 1)
              if [ -z "$JAR_PATH" ]; then
                echo "No JAR file found!"
                exit 1
              fi
              echo "Found JAR file: $JAR_PATH"
              cp "$JAR_PATH" bot.jar
+             ls -la bot.jar
          
          - name: Deploy jar to VPS
            uses: appleboy/scp-action@master
