@@ -56,12 +56,10 @@ data class InlineKeyBoard(
 )
 
 fun main(args: Array<String>) {
-
     val botToken = args[0]
     var lastUpdateId = 0L
     val json = Json { ignoreUnknownKeys = true }
     val trainers = HashMap<Long, LearnWordTrainer>()
-    val trainer = LearnWordTrainer()
 
     while (true) {
         Thread.sleep(TIME_SLEEP)
@@ -73,8 +71,6 @@ fun main(args: Array<String>) {
         val sortedUpdates = response.result.sortedBy { it.updateId }
         sortedUpdates.forEach { handleUpdate(it, json, botToken, trainers) }
         lastUpdateId = sortedUpdates.last().updateId + 1
-
-
     }
 }
 
@@ -84,7 +80,8 @@ fun handleUpdate(update: Update, json: Json, botToken: String, trainers: HashMap
     val data = update.callbackQuery?.data
 
     val trainer = trainers.getOrPut(chatId) {
-        LearnWordTrainer("$chatId.txt")
+        val dictionary = DatabaseUserDictionary(dbPath = "user_$chatId.db")
+        LearnWordTrainer(dictionary)
     }
 
     if (message?.lowercase() == "/start" || message?.lowercase() == "menu") {
@@ -111,7 +108,7 @@ fun handleUpdate(update: Update, json: Json, botToken: String, trainers: HashMap
     }
 
     if (data == STATISTIC_CLICKED) {
-        val statistics: Statistics = trainer.getStatistics()
+        val statistics = trainer.getStatistics()
         sendMessage(
             json, botToken, chatId,
             "Выучено ${statistics.learnedCount} из ${statistics.totalCount} слов | ${statistics.percentCount}%"
@@ -119,7 +116,7 @@ fun handleUpdate(update: Update, json: Json, botToken: String, trainers: HashMap
     }
 
     if (data == RESET_CLICKED) {
-        trainer.resetProgress()
+        trainer.dictionary.resetUserProgress()
         sendMessage(json, botToken, chatId, "Прогресс сброшен")
     }
 }

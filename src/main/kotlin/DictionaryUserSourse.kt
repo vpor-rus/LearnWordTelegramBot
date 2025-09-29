@@ -1,5 +1,3 @@
-
-
 import java.sql.DriverManager
 import java.io.File
 
@@ -78,3 +76,4 @@ fun updateDictionary(wordsFile: File) {
         throw RuntimeException("Ошибка при обновлении словаря: ${e.message}", e)
     }
 }
+
