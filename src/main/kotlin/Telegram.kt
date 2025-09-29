@@ -61,6 +61,7 @@ fun main(args: Array<String>) {
     val json = Json { ignoreUnknownKeys = true }
     val trainers = HashMap<Long, LearnWordTrainer>()
 
+
     while (true) {
         Thread.sleep(TIME_SLEEP)
         val responseString: String = getUpdates(botToken, lastUpdateId)
@@ -214,4 +215,5 @@ fun sendQuestion(json: Json, botToken: String, chatId: Long, question: Question)
     val response = client.send(request, HttpResponse.BodyHandlers.ofString())
     return response.body()
 }
+
 

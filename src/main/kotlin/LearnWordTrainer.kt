@@ -10,6 +10,7 @@ data class Question(
 )
 
 class LearnWordTrainer(
+
     val dictionary: IUserDictionary = DatabaseUserDictionary(dbPath = "data.db"),
     val learnedAnswerCounter: Int = 3,
     val countOfQuestionWords: Int = 4
