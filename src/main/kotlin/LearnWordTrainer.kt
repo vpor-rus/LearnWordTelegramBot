@@ -12,12 +12,11 @@ data class Question(
 )
 
 class LearnWordTrainer(
-    private  val fileName: String = "words.txt",
+    private val dictionary: IUserDictionary = DatabaseUserDictionary(dbPath = "data.db"),
     private val learnedAnswerCounter: Int = 3,
     val countOfQuestionWords: Int = 4
 ) {
     internal var question: Question? = null
-    val dictionary = DatabaseUserDictionary(dbPath = "data.db")
 
     private fun getStatistics(): Statistics {
         val totalCount = dictionary.getSize()
@@ -61,9 +60,11 @@ class LearnWordTrainer(
     }
 
     fun checkAnswer(userAnswerIndex: Int?): Boolean {
-        return if (userAnswerIndex != null && question.variants.getOrNull(userAnswerIndex) == question.correctAnswer) {
-            val correctWord = question.correctAnswer.questionWord
-            val currentCorrectAnswers = question.correctAnswer.correctAnswerCount
+        val currentQuestion = question ?: return false
+
+        return if (userAnswerIndex != null && currentQuestion.variants.getOrNull(userAnswerIndex) == currentQuestion.correctAnswer) {
+            val correctWord = currentQuestion.correctAnswer.questionWord
+            val currentCorrectAnswers = currentQuestion.correctAnswer.correctAnswerCount
             dictionary.setCorrectAnswersCount(correctWord, currentCorrectAnswers + 1)
             true
         } else {
@@ -71,9 +72,11 @@ class LearnWordTrainer(
         }
     }
 
-
     fun resetProgress() {
-        dictionary.forEach { it.correctAnswerCount = 0 }
-        saveDictionary()
+
+        val allWords = dictionary.getLearnedWords() + dictionary.getUnlearnedWords()
+        for (word in allWords) {
+            dictionary.setCorrectAnswersCount(word.questionWord, 0)
+        }
     }
 }
