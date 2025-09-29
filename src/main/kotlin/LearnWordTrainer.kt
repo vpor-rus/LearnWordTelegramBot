@@ -1,5 +1,3 @@
-import java.io.File
-
 data class Statistics(
     val learnedCount: Int,
     val totalCount: Int,
@@ -12,13 +10,14 @@ data class Question(
 )
 
 class LearnWordTrainer(
-    private val dictionary: IUserDictionary = DatabaseUserDictionary(dbPath = "data.db"),
-    private val learnedAnswerCounter: Int = 3,
+
+    val dictionary: IUserDictionary = DatabaseUserDictionary(dbPath = "data.db"),
+    val learnedAnswerCounter: Int = 3,
     val countOfQuestionWords: Int = 4
 ) {
     internal var question: Question? = null
 
-    private fun getStatistics(): Statistics {
+    fun getStatistics(): Statistics {
         val totalCount = dictionary.getSize()
         val learnedCount = dictionary.getNumOfLearnedWords()
         val percentCount = if (totalCount> 0) learnedCount * 100 / totalCount else 0

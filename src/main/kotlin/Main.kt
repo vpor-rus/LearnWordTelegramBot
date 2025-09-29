@@ -1,7 +1,9 @@
+import additional.LearnWordTrainer
+import additional.Question
 import kotlinx.serialization.Serializable
 
 @Serializable
- data class Word(
+data class Word(
     val questionWord: String,
     val translate: String,
     var correctAnswerCount: Int = 0,
@@ -22,7 +24,7 @@ fun Question.asConsoleString(): String {
 
 fun main() {
     val trainer = try {
-        LearnWordTrainer(learnedAnswerCounter = 3, countOfQuestionWords = 4)
+        LearnWordTrainer()
     } catch (e: Exception) {
         println ("Невозможно загрузить словарь")
         return
