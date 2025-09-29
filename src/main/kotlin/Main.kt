@@ -1,5 +1,4 @@
-import additional.LearnWordTrainer
-import additional.Question
+
 import kotlinx.serialization.Serializable
 
 @Serializable
