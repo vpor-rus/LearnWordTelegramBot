@@ -61,7 +61,7 @@ fun main(args: Array<String>) {
     var lastUpdateId = 0L
     val json = Json { ignoreUnknownKeys = true }
     val trainers = HashMap<Long, LearnWordTrainer>()
-    val trainer = LearnWordTrainer()
+    val trainer = LearnWordTrainer(dictionary)
 
     while (true) {
         Thread.sleep(TIME_SLEEP)
