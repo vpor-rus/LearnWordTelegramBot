@@ -70,4 +70,40 @@ class CalculatorTest {
             Question(variants = variants, correctAnswer = correctAnswer).asConsoleString()
         }
     }
+
+    @Test
+    fun testWithTenVariants() {
+        val variants = listOf(
+            Word("apple", "яблоко"),
+            Word("banana", "банан"),
+            Word("orange", "апельсин"),
+            Word("pear", "груша"),
+            Word("grape", "виноград"),
+            Word("lemon", "лимон"),
+            Word("cherry", "вишня"),
+            Word("plum", "слива"),
+            Word("peach", "персик"),
+            Word("apricot", "абрикос")
+        )
+
+        val correctAnswer = Word("apple", "яблоко")
+
+        val question = Question(
+            variants = variants,
+            correctAnswer = correctAnswer
+        )
+
+        val result = question.asConsoleString()
+
+        println("Результат asConsoleString() с 10 вариантами: '$result'")
+
+        println("Содержит 'apple': ${result.contains("apple")}")
+        println("Содержит 'banana': ${result.contains("banana")}")
+        println("Содержит 'grape': ${result.contains("grape")}")
+        println("Содержит 'apricot': ${result.contains("apricot")}")
+
+        println("Содержит '1)': ${result.contains("1)")}")
+        println("Содержит '5)': ${result.contains("5)")}")
+        println("Содержит '10)': ${result.contains("10)")}")
+    }
 }
