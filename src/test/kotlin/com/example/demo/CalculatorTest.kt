@@ -60,4 +60,14 @@ class CalculatorTest {
 
         assertTrue(result.contains("apple"), "Правильный ответ 'apple' должен присутствовать")
     }
+
+    @Test
+    fun testWithEmptyVariants() {
+        val variants = emptyList<Word>()
+        val correctAnswer = Word("apple", "яблоко")
+
+        assertThrows<IllegalArgumentException> {
+            Question(variants = variants, correctAnswer = correctAnswer).asConsoleString()
+        }
+    }
 }
