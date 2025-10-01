@@ -39,4 +39,25 @@ class CalculatorTest {
         println("Содержит '4)': ${result.contains("4)")}")
 
     }
+
+    @Test
+    fun testWithDifferentOrder() {
+        val variants = listOf(
+            Word("pear", "груша"),
+            Word("orange", "апельсин"),
+            Word("banana", "банан"),
+            Word("apple", "яблоко")
+        )
+
+        val correctAnswer = Word("apple", "яблоко")
+        val question = Question(variants = variants, correctAnswer = correctAnswer)
+        val result = question.asConsoleString()
+
+        assertTrue(result.contains("apple"), "Строка должна содержать 'apple'")
+        assertTrue(result.contains("banana"), "Строка должна содержать 'banana'")
+        assertTrue(result.contains("orange"), "Строка должна содержать 'orange'")
+        assertTrue(result.contains("pear"), "Строка должна содержать 'pear'")
+
+        assertTrue(result.contains("apple"), "Правильный ответ 'apple' должен присутствовать")
+    }
 }
