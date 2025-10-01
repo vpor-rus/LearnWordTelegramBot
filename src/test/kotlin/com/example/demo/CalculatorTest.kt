@@ -139,4 +139,78 @@ class CalculatorTest {
                 "Сообщение об ошибке должно указывать на слишком большое количество вариантов")
         }
     }
+
+    @Test
+    fun testWithSpecialCharacters() {
+        val variants = listOf(
+            Word("C++ (1983)", "язык C++"),
+            Word("Java [1995]", "язык Java"),
+            Word("Python {1991}", "язык Python"),
+            Word("Kotlin; 2011", "язык Kotlin")
+        )
+
+        val correctAnswer = Word("Kotlin; 2011", "язык Kotlin")
+
+        val question = Question(
+            variants = variants,
+            correctAnswer = correctAnswer
+        )
+
+        val result = question.asConsoleString()
+
+        assertTrue(result.contains("C++ (1983)"), "Строка должна содержать 'C++ (1983)'")
+        assertTrue(result.contains("Java [1995]"), "Строка должна содержать 'Java [1995]'")
+        assertTrue(result.contains("Python {1991}"), "Строка должна содержать 'Python {1991}'")
+        assertTrue(result.contains("Kotlin; 2011"), "Строка должна содержать 'Kotlin; 2011'")
+
+        assertTrue(result.contains("(") && result.contains(")"),
+        "Строка должна содержать круглые скобки")
+        assertTrue(result.contains("[") && result.contains("]"),
+        "Строка должна содержать квадратные скобки")
+        assertTrue(result.contains("{") && result.contains("}"),
+        "Строка должна содержать фигурные скобки")
+        assertTrue(result.contains(";"),
+            "Строка должна содержать точку с запятой")
+    }
+
+    @Test
+    fun testWithSpacesInWords() {
+        val variants = listOf(
+            Word("   ", "три пробела"),
+            Word("word", "слово"),
+            Word(" ", "один пробел"),
+            Word("  two spaces  ", "два пробела до и после")
+        )
+
+        val correctAnswer = Word("   ", "три пробела")
+
+        val question = Question(
+            variants = variants,
+            correctAnswer = correctAnswer
+        )
+
+        val result = question.asConsoleString()
+
+        if (result.contains("   ")) {
+            assertTrue(result.contains("   "), "Строка должна содержать 'три пробела'")
+            assertTrue(result.contains(" "), "Строка должна содержать 'один пробел'")
+            assertTrue(result.contains("  two spaces  "), "Строка должна содержать '  two spaces  '")
+        }
+
+        else {
+
+            assertTrue(result.contains("три пробела") ||
+                    result.contains("\"   \"") ||
+                    result.contains("'   '"),
+                "Строка должна содержать представление 'три пробела'")
+
+
+            assertTrue(result.contains("один пробел") ||
+                    result.contains("\" \"") ||
+                    result.contains("' '"),
+                "Строка должна содержать представление 'один пробел'")
+        }
+
+        assertTrue(result.contains("word"), "Строка должна содержать 'word'")
+    }
 }
