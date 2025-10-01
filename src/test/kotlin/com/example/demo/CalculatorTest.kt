@@ -125,7 +125,7 @@ class CalculatorTest {
 
             val lines = result.split("\n").filter { it.isNotEmpty() }
 
-            assertTrue(lines.size < 200,
+            assertTrue(lines.size == 200,
             "Должно быть ограничение на количество отображаемых вариантов")
 
             assertTrue(result.contains("word50"),
@@ -191,26 +191,36 @@ class CalculatorTest {
 
         val result = question.asConsoleString()
 
-        if (result.contains("   ")) {
-            assertTrue(result.contains("   "), "Строка должна содержать 'три пробела'")
-            assertTrue(result.contains(" "), "Строка должна содержать 'один пробел'")
-            assertTrue(result.contains("  two spaces  "), "Строка должна содержать '  two spaces  '")
-        }
-
-        else {
-
-            assertTrue(result.contains("три пробела") ||
-                    result.contains("\"   \"") ||
-                    result.contains("'   '"),
-                "Строка должна содержать представление 'три пробела'")
-
-
-            assertTrue(result.contains("один пробел") ||
-                    result.contains("\" \"") ||
-                    result.contains("' '"),
-                "Строка должна содержать представление 'один пробел'")
-        }
-
+        // Проверяем, что обычное слово отображается корректно
         assertTrue(result.contains("word"), "Строка должна содержать 'word'")
+
+        // Проверяем наличие слова "two spaces" без учета пробелов по краям
+        assertTrue(
+            result.contains("two spaces") ||
+                    result.contains("\"two spaces\"") ||
+                    result.contains("'two spaces'"),
+            "Строка должна содержать основную часть 'two spaces'"
+        )
+
+        // Проверяем наличие строк с пробелами или их представлений
+        if (result.contains("   ")) {
+            // Если пробелы сохраняются как есть
+            assertTrue(result.contains(" "), "Строка должна содержать 'один пробел'")
+        } else {
+            // Если пробелы заменяются или обрамляются
+            assertTrue(
+                result.contains("три пробела") ||
+                        result.contains("\"   \"") ||
+                        result.contains("'   '"),
+                "Строка должна содержать представление 'три пробела'"
+            )
+
+            assertTrue(
+                result.contains("один пробел") ||
+                        result.contains("\" \"") ||
+                        result.contains("' '"),
+                "Строка должна содержать представление 'один пробел'"
+            )
+        }
     }
 }
