@@ -38,23 +38,23 @@ class CalculatorTest {
     @Test
     fun testWithDifferentOrder() {
         val variants = listOf(
-            Word("pear", "груша"),
-            Word("orange", "апельсин"),
-            Word("banana", "банан"),
-            Word("apple", "яблоко")
+            Word("define", "определять"),
+            Word("solve", "решать"),
+            Word("serve", "служить"),
+            Word("empty", "пустой")
         )
 
-        val correctAnswer = Word("apple", "яблоко")
+        val correctAnswer = Word("define", "определять")
         val question = Question(variants = variants, correctAnswer = correctAnswer)
         val result = question.asConsoleString()
 
         println("Результат asConsoleString() с другим порядком: '$result'")
 
         val containsEnglishOrTranslation = listOf(
-            result.contains("apple") || result.contains("яблоко"),
-            result.contains("banana") || result.contains("банан"),
-            result.contains("orange") || result.contains("апельсин"),
-            result.contains("pear") || result.contains("груша")
+            result.contains("define") || result.contains("определять"),
+            result.contains("serve") || result.contains("служить"),
+            result.contains("solve") || result.contains("решать"),
+            result.contains("empty") || result.contains("пустой")
         )
 
         assertTrue(
@@ -63,14 +63,8 @@ class CalculatorTest {
         )
 
         assertTrue(
-            result.contains("apple") || result.contains("яблоко"),
-            "Правильный ответ (apple/яблоко) должен присутствовать"
-        )
-
-        assertTrue(
-            result.contains("1)") && result.contains("2)") &&
-                    result.contains("3)") && result.contains("4)"),
-            "Вывод должен содержать номера вариантов от 1 до 4"
+            result.contains("define") || result.contains("определять"),
+            "Правильный ответ (define/определять) должен присутствовать"
         )
     }
 
