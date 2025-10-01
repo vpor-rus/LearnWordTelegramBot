@@ -37,14 +37,15 @@ jobs:
           name: bot-jar
           path: bot.jar
 
-      - name: Deploy to server
       - name: Debug SSH Key
-  run: |
-    mkdir -p ~/.ssh
-    echo "Checking SSH key format..."
-    echo "${{ secrets.SSH_KEY }}" | wc -l
-    echo "${{ secrets.SSH_KEY }}" | head -n 1
-    echo "${{ secrets.SSH_KEY }}" | tail -n 1
+        run: |
+          mkdir -p ~/.ssh
+          echo "Checking SSH key format..."
+          echo "${{ secrets.SSH_KEY }}" | wc -l
+          echo "${{ secrets.SSH_KEY }}" | head -n 1
+          echo "${{ secrets.SSH_KEY }}" | tail -n 1
+
+      - name: Deploy to server
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.HOST }}
