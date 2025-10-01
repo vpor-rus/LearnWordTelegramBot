@@ -106,4 +106,37 @@ class CalculatorTest {
         println("Содержит '5)': ${result.contains("5)")}")
         println("Содержит '10)': ${result.contains("10)")}")
     }
+
+    @Test
+    fun testWithTooManyVariants() {
+        val variants = List(200) { index ->
+            Word("word$index", "слово$index")
+        }
+
+        val correctAnswer = Word("word50", "слово50")
+
+        try {
+            val question = Question(
+                variants = variants,
+                correctAnswer = correctAnswer
+            )
+
+            val result = question.asConsoleString()
+
+            val lines = result.split("\n").filter { it.isNotEmpty() }
+
+            assertTrue(lines.size < 200,
+            "Должно быть ограничение на количество отображаемых вариантов")
+
+            assertTrue(result.contains("word50"),
+                "Правильный ответ должен присутствовать даже при большом количестве вариантов")
+
+            println("Метод обработал 200 вариантов без исключения. Количество строк: ${lines.size}")
+        } catch (e: IllegalArgumentException) {
+            println("Выброшено исключение при 200 вариантах: ${e.message}")
+            assertTrue(e.message?.contains("too many") == true ||
+                    e.message?.contains("слишком много") == true,
+                "Сообщение об ошибке должно указывать на слишком большое количество вариантов")
+        }
+    }
 }
