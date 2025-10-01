@@ -12,13 +12,13 @@ class CalculatorTest {
     fun testWithFourVariants() {
 
         val variants = listOf(
-            Word("apple", "яблоко"),
-            Word("banana", "банан"),
-            Word("orange", "апельсин"),
-            Word("pear", "груша")
+            Word("define", "определять"),
+            Word("solve", "решать"),
+            Word("serve", "служить"),
+            Word("empty", "пустой")
         )
 
-        val correctAnswer = Word("apple", "яблоко")
+        val correctAnswer = Word("define", "определять")
 
         val question = Question(
             variants = variants,
@@ -29,15 +29,10 @@ class CalculatorTest {
 
         println("Результат asConsoleString(): '$result'")
 
-        println("Содержит 'apple': ${result.contains("apple")}")
-        println("Содержит 'banana': ${result.contains("banana")}")
-        println("Содержит 'orange': ${result.contains("orange")}")
-        println("Содержит 'pear': ${result.contains("pear")}")
-        println("Содержит '1)': ${result.contains("1)")}")
-        println("Содержит '2)': ${result.contains("2)")}")
-        println("Содержит '3)': ${result.contains("3)")}")
-        println("Содержит '4)': ${result.contains("4)")}")
-
+        println("Содержит 'define': ${result.contains("define")}")
+        println("Содержит 'solve': ${result.contains("solve")}")
+        println("Содержит 'serve': ${result.contains("serve")}")
+        println("Содержит 'empty': ${result.contains("empty")}")
     }
 
     @Test
