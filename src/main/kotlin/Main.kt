@@ -1,4 +1,3 @@
-
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -89,4 +88,3 @@ fun main() {
         }
     }
 }
-

@@ -76,4 +76,3 @@ fun updateDictionary(wordsFile: File) {
         throw RuntimeException("Ошибка при обновлении словаря: ${e.message}", e)
     }
 }
-

@@ -215,5 +215,3 @@ fun sendQuestion(json: Json, botToken: String, chatId: Long, question: Question)
     val response = client.send(request, HttpResponse.BodyHandlers.ofString())
     return response.body()
 }
-
-
