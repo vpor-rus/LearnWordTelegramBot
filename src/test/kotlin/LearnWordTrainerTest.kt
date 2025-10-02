@@ -50,4 +50,48 @@ class LearnWordTrainerTest {
 
         kotlin.test.assertNull(question, "Вопрос должен быть null, когда все слова изучены")
     }
+
+    @Test
+    fun `test checkAnswer with true`() {
+        val trainer = LearnWordTrainer("src/test/words_for_check.txt")
+        val question = trainer.getNextQuestion()
+
+        kotlin.test.assertNotNull(question, "Вопрос не должен быть null")
+
+        val correctIndex = question.variants.indexOf(question.correctAnswer)
+        kotlin.test.assertTrue(correctIndex >= 0, "Правильный ответ должен быть в списке вариантов")
+
+        val result = trainer.checkAnswer(correctIndex)
+
+        kotlin.test.assertTrue(result, "Результат должен быть true для правильного ответа")
+    }
+
+    @Test
+    fun `test checkAnswer with false`() {
+        val trainer = LearnWordTrainer("src/test/words_for_check.txt")
+        val question = trainer.getNextQuestion()
+
+        kotlin.test.assertNotNull(question, "Вопрос не должен быть null")
+        val correctIndex = question.variants.indexOf(question.correctAnswer)
+
+        val wrongIndex = if (correctIndex == 0) 1 else 0
+
+        kotlin.test.assertNotEquals(correctIndex, wrongIndex, "Индексы должны быть разными")
+
+        val result = trainer.checkAnswer(wrongIndex)
+
+        kotlin.test.assertFalse(result, "Результат должен быть false для неправильного ответа")
+    }
+
+    @Test
+    fun `test checkAnswer with null index`() {
+        val trainer = LearnWordTrainer("src/test/words_for_check.txt")
+        val question = trainer.getNextQuestion()
+
+        kotlin.test.assertNotNull(question, "Вопрос не должен быть null")
+
+        val result = trainer.checkAnswer(null)
+
+        kotlin.test.assertFalse(result, "Результат должен быть false для null индекса")
+    }
 }
