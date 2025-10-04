@@ -11,7 +11,7 @@ data class Question(
 
 class LearnWordTrainer(
 
-    val dictionary: String = DatabaseUserDictionary(dbPath = "data.db"),
+    val dictionary: IUserDictionary = DatabaseUserDictionary(dbPath = "data.db"),
     val learnedAnswerCounter: Int = 3,
     val countOfQuestionWords: Int = 4
 ) {

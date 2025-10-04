@@ -5,7 +5,10 @@ class LearnWordTrainerTest {
     @Test
     fun `test statistics with 4 words of 7`()
     {
-        val trainer = LearnWordTrainer("src/test/4_word_of_7.txt")
+        val dictionary = FileUserDictionary("src/test/4_word_of_7.txt")
+
+        val trainer = LearnWordTrainer(dictionary)
+
         kotlin.test.assertEquals(
             Statistics(learnedCount = 4, totalCount = 7, percentCount = 57),
             trainer.getStatistics()
