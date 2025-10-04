@@ -17,7 +17,9 @@ class LearnWordTrainerTest {
 
     @Test
     fun `test statistics with corrupted file`() {
-        val trainer = LearnWordTrainer("src/test/corrupted_file.txt")
+        val dictionary = FileUserDictionary("src/test/4_word_of_7.txt")
+
+        val trainer = LearnWordTrainer(dictionary)
         kotlin.test.assertEquals(
             Statistics(learnedCount = 0, totalCount = 0, percentCount = 0),
             trainer.getStatistics()
@@ -26,7 +28,9 @@ class LearnWordTrainerTest {
 
     @Test
     fun `test getNextQuestion with 5 unlearned words`() {
-        val trainer = LearnWordTrainer("src/test/5_unlearned_words.txt")
+        val dictionary = FileUserDictionary("src/test/4_word_of_7.txt")
+
+        val trainer = LearnWordTrainer(dictionary)
         val question = trainer.getNextQuestion()
 
         kotlin.test.assertNotNull(question, "Вопрос не должен быть null")
@@ -37,7 +41,9 @@ class LearnWordTrainerTest {
 
     @Test
     fun `test getNextQuestion with 1 unlearned word`() {
-        val trainer = LearnWordTrainer("src/test/1_unlearned_word.txt")
+        val dictionary = FileUserDictionary("src/test/4_word_of_7.txt")
+
+        val trainer = LearnWordTrainer(dictionary)
         val question = trainer.getNextQuestion()
 
         kotlin.test.assertNotNull(question, "Вопрос не должен быть null")
@@ -48,7 +54,9 @@ class LearnWordTrainerTest {
 
     @Test
     fun `test getNextQuestion with all words learned`() {
-        val trainer = LearnWordTrainer("src/test/all_words_learned.txt")
+        val dictionary = FileUserDictionary("src/test/4_word_of_7.txt")
+
+        val trainer = LearnWordTrainer(dictionary)
         val question = trainer.getNextQuestion()
 
         kotlin.test.assertNull(question, "Вопрос должен быть null, когда все слова изучены")
@@ -56,7 +64,9 @@ class LearnWordTrainerTest {
 
     @Test
     fun `test checkAnswer with true`() {
-        val trainer = LearnWordTrainer("src/test/words_for_check.txt")
+        val dictionary = FileUserDictionary("src/test/4_word_of_7.txt")
+
+        val trainer = LearnWordTrainer(dictionary)
         val question = trainer.getNextQuestion()
 
         kotlin.test.assertNotNull(question, "Вопрос не должен быть null")
@@ -71,7 +81,9 @@ class LearnWordTrainerTest {
 
     @Test
     fun `test checkAnswer with false`() {
-        val trainer = LearnWordTrainer("src/test/words_for_check.txt")
+        val dictionary = FileUserDictionary("src/test/4_word_of_7.txt")
+
+        val trainer = LearnWordTrainer(dictionary)
         val question = trainer.getNextQuestion()
 
         kotlin.test.assertNotNull(question, "Вопрос не должен быть null")
@@ -88,7 +100,9 @@ class LearnWordTrainerTest {
 
     @Test
     fun `test checkAnswer with null index`() {
-        val trainer = LearnWordTrainer("src/test/words_for_check.txt")
+        val dictionary = FileUserDictionary("src/test/4_word_of_7.txt")
+
+        val trainer = LearnWordTrainer(dictionary)
         val question = trainer.getNextQuestion()
 
         kotlin.test.assertNotNull(question, "Вопрос не должен быть null")
