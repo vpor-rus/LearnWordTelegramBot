@@ -17,7 +17,7 @@ class LearnWordTrainerTest {
 
     @Test
     fun `test statistics with corrupted file`() {
-        val dictionary = FileUserDictionary("src/test/4_word_of_7.txt")
+        val dictionary = FileUserDictionary("src/test/statistics_with_corrupted_file.txt")
 
         val trainer = LearnWordTrainer(dictionary)
         kotlin.test.assertEquals(
@@ -28,7 +28,7 @@ class LearnWordTrainerTest {
 
     @Test
     fun `test getNextQuestion with 5 unlearned words`() {
-        val dictionary = FileUserDictionary("src/test/4_word_of_7.txt")
+        val dictionary = FileUserDictionary("src/test/getNextQuestion_with_5_unlearned_words.txt")
 
         val trainer = LearnWordTrainer(dictionary)
         val question = trainer.getNextQuestion()
@@ -41,7 +41,7 @@ class LearnWordTrainerTest {
 
     @Test
     fun `test getNextQuestion with 1 unlearned word`() {
-        val dictionary = FileUserDictionary("src/test/4_word_of_7.txt")
+        val dictionary = FileUserDictionary("src/test/getNextQuestion_with_1_unlearned_word.txt")
 
         val trainer = LearnWordTrainer(dictionary)
         val question = trainer.getNextQuestion()
@@ -54,7 +54,7 @@ class LearnWordTrainerTest {
 
     @Test
     fun `test getNextQuestion with all words learned`() {
-        val dictionary = FileUserDictionary("src/test/4_word_of_7.txt")
+        val dictionary = FileUserDictionary("src/test/getNextQuestion_with_all_words_learned.txt")
 
         val trainer = LearnWordTrainer(dictionary)
         val question = trainer.getNextQuestion()
@@ -64,7 +64,7 @@ class LearnWordTrainerTest {
 
     @Test
     fun `test checkAnswer with true`() {
-        val dictionary = FileUserDictionary("src/test/4_word_of_7.txt")
+        val dictionary = FileUserDictionary("src/test/checkAnswer_with_true.txt")
 
         val trainer = LearnWordTrainer(dictionary)
         val question = trainer.getNextQuestion()
@@ -81,7 +81,7 @@ class LearnWordTrainerTest {
 
     @Test
     fun `test checkAnswer with false`() {
-        val dictionary = FileUserDictionary("src/test/4_word_of_7.txt")
+        val dictionary = FileUserDictionary("src/test/checkAnswer_with_false.txt")
 
         val trainer = LearnWordTrainer(dictionary)
         val question = trainer.getNextQuestion()
@@ -100,7 +100,7 @@ class LearnWordTrainerTest {
 
     @Test
     fun `test checkAnswer with null index`() {
-        val dictionary = FileUserDictionary("src/test/4_word_of_7.txt")
+        val dictionary = FileUserDictionary("src/test/checkAnswer_with_null_index.txt")
 
         val trainer = LearnWordTrainer(dictionary)
         val question = trainer.getNextQuestion()
