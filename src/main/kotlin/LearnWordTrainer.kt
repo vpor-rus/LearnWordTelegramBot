@@ -24,7 +24,7 @@ class LearnWordTrainer(
         return Statistics(learnedCount, totalCount, percentCount)
     }
 
-    internal fun getNextQuestion(): Question {
+    fun getNextQuestion(): Question {
         val unlearnedWords = dictionary.getUnlearnedWords()
         if (unlearnedWords.isEmpty()) {
             val allWords = dictionary.getLearnedWords() + dictionary.getUnlearnedWords()

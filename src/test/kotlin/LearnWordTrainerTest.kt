@@ -84,15 +84,14 @@ class LearnWordTrainerTest {
         val trainer = LearnWordTrainer(dictionary)
 
         try {
-            val getNextQuestionMethod = LearnWordTrainer::class.java.getDeclaredMethod("getNextQuestion")
+            val getNextQuestionMethod = trainer.javaClass.getDeclaredMethod("getNextQuestion")
             getNextQuestionMethod.isAccessible = true
-            val questionObj = getNextQuestionMethod.invoke(trainer)
 
-            val questionField = LearnWordTrainer::class.java.getDeclaredField("question")
+            val question = getNextQuestionMethod.invoke(trainer) as Question
+
+            val questionField = trainer.javaClass.getDeclaredField("question")
             questionField.isAccessible = true
-            questionField.set(trainer, questionObj)
-
-            val question = questionObj as Question
+            questionField.set(trainer, question)
 
             val correctIndex = question.variants.indexOf(question.correctAnswer)
             kotlin.test.assertTrue(correctIndex >= 0, "Правильный ответ должен быть в списке вариантов")
