@@ -12,8 +12,7 @@ data class Question(
 class LearnWordTrainer(
 
     val dictionary: IUserDictionary = DatabaseUserDictionary(dbPath = "data.db"),
-    val learnedAnswerCounter: Int = 3,
-    val countOfQuestionWords: Int = 4
+    private val countOfQuestionWords: Int = 4
 ) {
     internal var question: Question? = null
 
@@ -24,38 +23,23 @@ class LearnWordTrainer(
         return Statistics(learnedCount, totalCount, percentCount)
     }
 
-    fun getNextQuestion(): Question {
+    fun getNextQuestion(): Question? {
         val unlearnedWords = dictionary.getUnlearnedWords()
         if (unlearnedWords.isEmpty()) {
-            val allWords = dictionary.getLearnedWords() + dictionary.getUnlearnedWords()
-            if (allWords.isEmpty()) {
-                throw IllegalStateException("Словарь пуст!")
-            }
-            val questionWord = allWords.random()
-
-            val variants = mutableSetOf<Word>()
-            variants.add(questionWord)
-
-            while (variants.size < countOfQuestionWords && variants.size < allWords.size) {
-                val randomWord = allWords.random()
-                variants.add(randomWord)
+            return null
             }
 
-            return Question(variants.shuffled(), questionWord)
+        var variants = unlearnedWords.shuffled().take(countOfQuestionWords)
+        val questionWord = variants.random()
+
+        if (variants.size < countOfQuestionWords) {
+            variants = variants + dictionary.getLearnedWords()
+                .shuffled()
+                .take(countOfQuestionWords - variants.size).shuffled()
         }
 
-        val questionWord = unlearnedWords.random()
-
-        val variants = mutableSetOf<Word>()
-        variants.add(questionWord)
-
-        val allWords = dictionary.getLearnedWords() + dictionary.getUnlearnedWords()
-        while (variants.size < countOfQuestionWords && variants.size < allWords.size) {
-            val randomWord = allWords.random()
-            variants.add(randomWord)
-        }
-
-        return Question(variants.shuffled(), questionWord)
+        question = Question(variants.shuffled(), questionWord)
+        return  question
     }
 
     fun checkAnswer(userAnswerIndex: Int?): Boolean {
@@ -72,10 +56,6 @@ class LearnWordTrainer(
     }
 
     fun resetProgress() {
-
-        val allWords = dictionary.getLearnedWords() + dictionary.getUnlearnedWords()
-        for (word in allWords) {
-            dictionary.setCorrectAnswersCount(word.questionWord, 0)
-        }
+        dictionary.resetUserProgress()
     }
 }

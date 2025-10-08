@@ -1,6 +1,10 @@
 import kotlin.test.Test
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class LearnWordTrainerTest {
 
@@ -45,9 +49,9 @@ class LearnWordTrainerTest {
         val trainer = LearnWordTrainer(dictionary)
         val question = trainer.getNextQuestion()
 
-        kotlin.test.assertNotNull(question, "Вопрос не должен быть null")
+        assertNotNull(question, "Вопрос не должен быть null")
 
-        kotlin.test.assertTrue(question.variants.isNotEmpty(), "Должен быть хотя бы один вариант")
+        assertTrue(question.variants.isNotEmpty(), "Должен быть хотя бы один вариант")
 
         kotlin.test.assertTrue(question.variants.contains(question.correctAnswer),
             "Правильный ответ должен быть в списке вариантов")
@@ -60,17 +64,9 @@ class LearnWordTrainerTest {
     }
 
     @Test
-    fun `test getNextQuestion with all words learned`()  {
-        val dictionary = object : IUserDictionary {
-            override fun getNumOfLearnedWords() = 0
-            override fun getSize() = 0
-            override fun getLearnedWords() = emptyList<Word>()
-            override fun getUnlearnedWords() = emptyList<Word>()
-            override fun setCorrectAnswersCount(word: String, correctAnswersCount: Int) {}
-            override fun resetUserProgress() {}
-        }
+    fun `test getNextQuestion with empty dictionary`()  {
 
-        val trainer = LearnWordTrainer(dictionary)
+        val trainer = LearnWordTrainer(EMPTY_DICTIONARY)
 
         val exception = assertThrows(IllegalStateException::class.java) {
             trainer.getNextQuestion()
@@ -84,16 +80,9 @@ class LearnWordTrainerTest {
         val trainer = LearnWordTrainer(dictionary)
 
         try {
-            val getNextQuestionMethod = trainer.javaClass.getDeclaredMethod("getNextQuestion")
-            getNextQuestionMethod.isAccessible = true
+            val question = trainer.getNextQuestion()
 
-            val question = getNextQuestionMethod.invoke(trainer) as Question
-
-            val questionField = trainer.javaClass.getDeclaredField("question")
-            questionField.isAccessible = true
-            questionField.set(trainer, question)
-
-            val correctIndex = question.variants.indexOf(question.correctAnswer)
+            val correctIndex = question?.variants?.indexOf(question.correctAnswer) ?: 0
             kotlin.test.assertTrue(correctIndex >= 0, "Правильный ответ должен быть в списке вариантов")
 
             val result = trainer.checkAnswer(correctIndex)
@@ -116,11 +105,11 @@ class LearnWordTrainerTest {
 
         val wrongIndex = if (correctIndex == 0) 1 else 0
 
-        kotlin.test.assertNotEquals(correctIndex, wrongIndex, "Индексы должны быть разными")
+        assertNotEquals(correctIndex, wrongIndex, "Индексы должны быть разными")
 
         val result = trainer.checkAnswer(wrongIndex)
 
-        kotlin.test.assertFalse(result, "Результат должен быть false для неправильного ответа")
+        assertFalse(result, "Результат должен быть false для неправильного ответа")
     }
 
     @Test
@@ -134,6 +123,15 @@ class LearnWordTrainerTest {
 
         val result = trainer.checkAnswer(null)
 
-        kotlin.test.assertFalse(result, "Результат должен быть false для null индекса")
+        assertFalse(result, "Результат должен быть false для null индекса")
+    }companion object{
+        val EMPTY_DICTIONARY = object : IUserDictionary {
+            override fun getNumOfLearnedWords() = 0
+            override fun getSize() = 0
+            override fun getLearnedWords() = emptyList<Word>()
+            override fun getUnlearnedWords() = emptyList<Word>()
+            override fun setCorrectAnswersCount(word: String, correctAnswersCount: Int) {}
+            override fun resetUserProgress() {}
+        }
     }
 }

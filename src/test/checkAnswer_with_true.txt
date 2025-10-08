@@ -1,5 +1,5 @@
 share|делится|0
-push|опубликовать|0
+push|опубликовать|1
 flow|поток|0
 update|обновить|0
 create|создать|0
@@ -22,7 +22,7 @@ generic|обобщение|0
 prohibite|запрещать|0
 item|элемент|0
 quantity|количество|0
-expected|ожидаемый|0
+expected|ожидаемый|1
 response|ответ|0
 send|посылать|0
 ||0
