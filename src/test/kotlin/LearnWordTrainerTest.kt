@@ -74,6 +74,7 @@ class LearnWordTrainerTest {
         assertEquals("Словарь пуст!", exception.message)
     }
 
+
     @Test
     fun `test checkAnswer with true`() {
         val dictionary = FileUserDictionary("src/test/checkAnswer_with_true.txt")
@@ -124,7 +125,9 @@ class LearnWordTrainerTest {
         val result = trainer.checkAnswer(null)
 
         assertFalse(result, "Результат должен быть false для null индекса")
-    }companion object{
+    }
+
+    companion object{
         val EMPTY_DICTIONARY = object : IUserDictionary {
             override fun getNumOfLearnedWords() = 0
             override fun getSize() = 0
