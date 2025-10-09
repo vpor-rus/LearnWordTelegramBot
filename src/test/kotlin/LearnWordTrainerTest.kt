@@ -120,7 +120,7 @@ class LearnWordTrainerTest {
         val trainer = LearnWordTrainer(dictionary)
         val question = trainer.getNextQuestion()
 
-        kotlin.test.assertNotNull(question, "Вопрос не должен быть null")
+        assertNotNull(question, "Вопрос не должен быть null")
 
         val result = trainer.checkAnswer(null)
 
