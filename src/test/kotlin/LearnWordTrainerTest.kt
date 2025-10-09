@@ -53,7 +53,7 @@ class LearnWordTrainerTest {
 
         assertTrue(question.variants.isNotEmpty(), "Должен быть хотя бы один вариант")
 
-        kotlin.test.assertTrue(question.variants.contains(question.correctAnswer),
+        assertTrue(question.variants.contains(question.correctAnswer),
             "Правильный ответ должен быть в списке вариантов")
 
         kotlin.test.assertEquals(
@@ -66,7 +66,7 @@ class LearnWordTrainerTest {
     @Test
     fun `test getNextQuestion with empty dictionary`()  {
 
-        val trainer = LearnWordTrainer(EMPTY_DICTIONARY)
+         val trainer = LearnWordTrainer(EMPTY_DICTIONARY)
 
         val exception = assertThrows(IllegalStateException::class.java) {
             trainer.getNextQuestion()
@@ -126,15 +126,15 @@ class LearnWordTrainerTest {
 
         assertFalse(result, "Результат должен быть false для null индекса")
     }
-
-    companion object{
+    companion object   {
         val EMPTY_DICTIONARY = object : IUserDictionary {
-            override fun getNumOfLearnedWords() = 0
-            override fun getSize() = 0
-            override fun getLearnedWords() = emptyList<Word>()
-            override fun getUnlearnedWords() = emptyList<Word>()
-            override fun setCorrectAnswersCount(word: String, correctAnswersCount: Int) {}
-            override fun resetUserProgress() {}
+        override fun getNumOfLearnedWords() = 0
+        override fun getSize() = 0
+        override fun getLearnedWords() = emptyList<Word>()
+        override fun getUnlearnedWords() = emptyList<Word>()
+        override fun setCorrectAnswersCount(word: String, correctAnswersCount: Int) {}
+        override fun resetUserProgress() {}
         }
     }
+
 }
