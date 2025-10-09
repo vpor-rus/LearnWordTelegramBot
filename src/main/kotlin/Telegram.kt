@@ -117,15 +117,23 @@ fun handleUpdate(update: Update, json: Json, botToken: String, trainers: HashMap
     }
 
     if (data == RESET_CLICKED) {
-        trainer.dictionary.resetUserProgress()
-        sendMessage(json, botToken, chatId, "Прогресс сброшен")
+        trainer.resetProgress()
+        sendMessage(
+            json,
+            botToken,
+            chatId,
+            "Прогресс сброшен")
     }
 }
 
 fun checkNextQuestionAndSend(json: Json, trainer: LearnWordTrainer, botToken: String, chatId: Long) {
     val question = trainer.getNextQuestion()
     if (question == null) {
-        sendMessage(json, botToken, chatId, "Вы выучили все слова в базе")
+        sendMessage(
+            json,
+            botToken,
+            chatId,
+            "Вы выучили все слова в базе")
     } else {
         sendQuestion(json, botToken, chatId, question)
     }

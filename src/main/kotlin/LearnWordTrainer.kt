@@ -11,10 +11,10 @@ data class Question(
 
 class LearnWordTrainer(
 
-    val dictionary: IUserDictionary = DatabaseUserDictionary(dbPath = "data.db"),
+    private val dictionary: IUserDictionary = DatabaseUserDictionary(dbPath = "data.db"),
     private val countOfQuestionWords: Int = 4
 ) {
-    internal var question: Question? = null
+    var question: Question? = null
 
     fun getStatistics(): Statistics {
         val totalCount = dictionary.getSize()
@@ -27,15 +27,15 @@ class LearnWordTrainer(
         val unlearnedWords = dictionary.getUnlearnedWords()
         if (unlearnedWords.isEmpty()) {
             return null
-            }
+        }
 
         var variants = unlearnedWords.shuffled().take(countOfQuestionWords)
         val questionWord = variants.random()
 
         if (variants.size < countOfQuestionWords) {
-            variants = variants + dictionary.getLearnedWords()
+            variants = (variants + dictionary.getLearnedWords()
                 .shuffled()
-                .take(countOfQuestionWords - variants.size).shuffled()
+                .take(countOfQuestionWords - variants.size)).shuffled()
         }
 
         question = Question(variants.shuffled(), questionWord)
