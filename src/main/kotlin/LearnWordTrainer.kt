@@ -26,7 +26,7 @@ class LearnWordTrainer(
     fun getNextQuestion(): Question? {
         val unlearnedWords = dictionary.getUnlearnedWords()
         if (unlearnedWords.isEmpty()) {
-            return null
+            throw IllegalStateException("Словарь пуст!")
         }
 
         var variants = unlearnedWords.shuffled().take(countOfQuestionWords)

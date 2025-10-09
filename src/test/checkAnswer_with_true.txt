@@ -22,7 +22,7 @@ generic|обобщение|0
 prohibite|запрещать|0
 item|элемент|0
 quantity|количество|0
-expected|ожидаемый|1
+expected|ожидаемый|2
 response|ответ|0
 send|посылать|0
 ||0
