@@ -7,6 +7,7 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.sql.DriverManager
 
 const val TIME_SLEEP: Long = 2000
 const val LEARN_WORDS_CLICKED = "learn_words_clicked"
@@ -136,7 +137,6 @@ fun handleUpdate(update: Update, json: Json, botToken: String, trainers: HashMap
     if (message?.lowercase() == "/start" || message?.lowercase() == "menu") {
         sendMenu(json, botToken, chatId)
     }
-
     if (data == LEARN_WORDS_CLICKED) {
         checkNextQuestionAndSend(json, trainer, botToken, chatId)
     }
@@ -171,6 +171,34 @@ fun handleUpdate(update: Update, json: Json, botToken: String, trainers: HashMap
             botToken,
             chatId,
             "Прогресс сброшен")
+    }
+
+    if (update.message?.document != null) {
+        val document = update.message.document
+        val fileId = document.fileId
+
+        try {
+            // Получаем информацию о файле
+            val fileResponse = json.decodeFromString<GetFileResponse>(getFile(fileId, json, botToken))
+
+            if (fileResponse.ok && fileResponse.result != null) {
+                val filePath = fileResponse.result.filePath
+                val fileName = "dictionary_${chatId}.txt"
+
+                downloadFile(filePath, fileName, botToken)
+                try {
+                    val file = File(fileName)
+                    updateDictionary(file)
+                    sendMessage(json, botToken, chatId, "Словарь успешно обновлен!")
+                } catch (e: Exception) {
+                    sendMessage(json, botToken, chatId, "Ошибка при обновлении словаря: ${e.message}")
+                }
+            } else {
+                sendMessage(json, botToken, chatId, "Не удалось получить информацию о файле")
+            }
+        } catch (e: Exception) {
+            sendMessage(json, botToken, chatId, "Произошла ошибка: ${e.message}")
+        }
     }
 }
 
@@ -283,8 +311,8 @@ fun getFile(fileId: String, json: Json, botToken: String): String {
         .POST(HttpRequest.BodyPublishers.ofString(requestBodyString))
         .build()
     val response: HttpResponse<String> = client.send(
-        request,
-        HttpResponse.BodyHandlers.ofString()
+    request,
+    HttpResponse.BodyHandlers.ofString()
     )
     return response.body()
 }
@@ -305,4 +333,53 @@ fun downloadFile(filePath: String, fileName: String, botToken: String) {
     println("status code: " + response.statusCode())
     val body: InputStream = response.body()
     body.copyTo(File(fileName).outputStream(), 16 * 1024)
+}
+
+fun updateDictionary(wordsFile: File, dbPath: String = "data.db") {
+    if (!wordsFile.exists()) {
+        throw IllegalArgumentException("Файл не существует: ${wordsFile.absolutePath}")
+    }
+
+    val words = wordsFile.readLines().mapNotNull { line ->
+        val parts = line.split("|")
+        if (parts.size >= 2) {
+            val original = parts[0].trim()
+            val translate = parts[1].trim()
+            val correctAnswersCount = if (parts.size > 2) parts[2].toIntOrNull() ?: 0 else 0
+            Triple(original, translate, correctAnswersCount)
+        } else null
+    }
+
+    if (words.isEmpty()) {
+        println("Предупреждение: файл не содержит корректных слов")
+        return
+    }
+
+    DriverManager.getConnection("jdbc:sqlite:$dbPath").use { connection ->
+        val createTableStatement = connection.createStatement()
+        createTableStatement.executeUpdate(
+            """
+            CREATE TABLE IF NOT EXISTS 'words' (
+                'id' INTEGER PRIMARY KEY,
+                'text' VARCHAR,
+                'translate' VARCHAR,
+                'correctAnswersCount' INTEGER DEFAULT 0
+            );
+            """.trimIndent()
+        )
+
+        val clearStatement = connection.createStatement()
+        clearStatement.executeUpdate("DELETE FROM words")
+
+        val insertStatement = connection.prepareStatement(
+            "INSERT INTO words (text, translate, correctAnswersCount) VALUES (?, ?, ?)"
+        )
+
+        words.forEach { (original, translate, count) ->
+            insertStatement.setString(1, original)
+            insertStatement.setString(2, translate)
+            insertStatement.setInt(3, count)
+            insertStatement.executeUpdate()
+        }
+    }
 }
