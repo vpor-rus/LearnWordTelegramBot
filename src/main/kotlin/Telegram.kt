@@ -188,7 +188,7 @@ fun checkNextQuestionAndSend(json: Json, trainer: LearnWordTrainer, botToken: St
 }
 
 fun getUpdates(botToken: String, updateid: Long): String {
-    val urlGetUpdate = "$BOT_FILE_URL$botToken/getUpdates?offset=$updateid"
+    val urlGetUpdate = "https://api.telegram.org/bot$botToken/getUpdates?offset=$updateid"
     val client: HttpClient = HttpClient.newBuilder().build()
     val request: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlGetUpdate)).build()
     val response: HttpResponse<String> = client.send(request, HttpResponse.BodyHandlers.ofString())
@@ -196,7 +196,7 @@ fun getUpdates(botToken: String, updateid: Long): String {
 }
 
 fun sendMessage(json: Json, botToken: String, chatId: Long, message: String): String {
-    val sendMessage = "$BOT_FILE_URL$botToken/sendMessage"
+    val sendMessage = "https://api.telegram.org/bot$botToken/sendMessage"
     val requestBody = SendMessageRequest(
         chatId = chatId,
         text = message,
@@ -211,7 +211,7 @@ fun sendMessage(json: Json, botToken: String, chatId: Long, message: String): St
 }
 
 fun sendMenu(json: Json, botToken: String, chatId: Long): String {
-    val sendMessage = "$BOT_FILE_URL$botToken/sendMessage"
+    val sendMessage = "https://api.telegram.org/bot$botToken/sendMessage"
     val requestBody = SendMessageRequest(
         chatId = chatId,
         text = "Основное меню",
@@ -242,7 +242,7 @@ fun sendMenu(json: Json, botToken: String, chatId: Long): String {
 }
 
 fun sendQuestion(json: Json, botToken: String, chatId: Long, question: Question): String {
-    val urlGetUpdate = "$BOT_FILE_URL$botToken/sendMessage"
+    val urlGetUpdate = "https://api.telegram.org/bot$botToken/sendMessage"
 
     val keyboardLayout = question.variants.mapIndexed { index: Int, word: Word ->
         "{ \"text\": \"${word.translate}\", \"callback_data\": \"$CALLBACK_DATA_ANSWER_PREFIX$index\" }"
@@ -273,7 +273,7 @@ fun sendQuestion(json: Json, botToken: String, chatId: Long, question: Question)
 }
 
 fun getFile(fileId: String, json: Json, botToken: String): String {
-    val urlGetFile = "$BOT_FILE_URL$botToken/getFile"
+    val urlGetFile = "https://api.telegram.org/bot$botToken/getFile"
     val requestBody = GetFileRequest(fileId = fileId)
     val requestBodyString = json.encodeToString(requestBody)
     val client: HttpClient = HttpClient.newBuilder().build()
