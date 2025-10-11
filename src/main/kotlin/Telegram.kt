@@ -1,6 +1,8 @@
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import java.io.File
+import java.io.InputStream
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -11,6 +13,7 @@ const val LEARN_WORDS_CLICKED = "learn_words_clicked"
 const val STATISTIC_CLICKED = "statistic_clicked"
 const val RESET_CLICKED = "reset_clicked"
 const val CALLBACK_DATA_ANSWER_PREFIX = "answer_"
+private const val BOT_FILE_URL = "https://api.telegram.org/file/bot"
 
 @Serializable
 data class Update(
@@ -24,8 +27,12 @@ data class Response(@SerialName("result") val result: List<Update>)
 
 @Serializable
 data class Message(
-    @SerialName("text") val text: String? = null,
-    @SerialName("chat") val chat: Chat,
+    @SerialName("text")
+    val text: String? = null,
+    @SerialName("chat")
+    val chat: Chat,
+    @SerialName("document")
+    val document: Document? = null,
 )
 
 @Serializable
@@ -53,6 +60,47 @@ data class ReplyMarkup(
 data class InlineKeyBoard(
     @SerialName("callback_data") val callbackData: String,
     @SerialName("text") val text: String,
+)
+
+@Serializable
+data class Document(
+    @SerialName("file_name")
+    val fileName: String,
+    @SerialName("mime_type")
+    val mimeType: String,
+    @SerialName("file_id")
+    val fileId: String,
+    @SerialName("file_unique_id")
+    val fileUniqueId: String,
+    @SerialName("file_size")
+    val fileSize: Long,
+)
+
+@Serializable
+data class GetFileResponse(
+    @SerialName("ok")
+    val ok: Boolean,
+    @SerialName(
+        "result")
+    val result: TelegramFile? = null,
+)
+
+@Serializable
+data class GetFileRequest(
+    @SerialName("file_id")
+    val fileId: String
+)
+
+@Serializable
+data class TelegramFile(
+    @SerialName("file_id")
+    val fileId: String,
+    @SerialName("file_unique_id")
+    val fileUniqueId: String,
+    @SerialName("file_size")
+    val fileSize: Long,
+    @SerialName("file_path")
+    val filePath: String,
 )
 
 fun main(args: Array<String>) {
@@ -140,7 +188,7 @@ fun checkNextQuestionAndSend(json: Json, trainer: LearnWordTrainer, botToken: St
 }
 
 fun getUpdates(botToken: String, updateid: Long): String {
-    val urlGetUpdate = "https://api.telegram.org/bot$botToken/getUpdates?offset=$updateid"
+    val urlGetUpdate = "$BOT_FILE_URL$botToken/getUpdates?offset=$updateid"
     val client: HttpClient = HttpClient.newBuilder().build()
     val request: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlGetUpdate)).build()
     val response: HttpResponse<String> = client.send(request, HttpResponse.BodyHandlers.ofString())
@@ -148,7 +196,7 @@ fun getUpdates(botToken: String, updateid: Long): String {
 }
 
 fun sendMessage(json: Json, botToken: String, chatId: Long, message: String): String {
-    val sendMessage = "https://api.telegram.org/bot$botToken/sendMessage"
+    val sendMessage = "$BOT_FILE_URL$botToken/sendMessage"
     val requestBody = SendMessageRequest(
         chatId = chatId,
         text = message,
@@ -163,7 +211,7 @@ fun sendMessage(json: Json, botToken: String, chatId: Long, message: String): St
 }
 
 fun sendMenu(json: Json, botToken: String, chatId: Long): String {
-    val sendMessage = "https://api.telegram.org/bot$botToken/sendMessage"
+    val sendMessage = "$BOT_FILE_URL$botToken/sendMessage"
     val requestBody = SendMessageRequest(
         chatId = chatId,
         text = "Основное меню",
@@ -194,7 +242,7 @@ fun sendMenu(json: Json, botToken: String, chatId: Long): String {
 }
 
 fun sendQuestion(json: Json, botToken: String, chatId: Long, question: Question): String {
-    val urlGetUpdate = "https://api.telegram.org/bot$botToken/sendMessage"
+    val urlGetUpdate = "$BOT_FILE_URL$botToken/sendMessage"
 
     val keyboardLayout = question.variants.mapIndexed { index: Int, word: Word ->
         "{ \"text\": \"${word.translate}\", \"callback_data\": \"$CALLBACK_DATA_ANSWER_PREFIX$index\" }"
@@ -222,4 +270,39 @@ fun sendQuestion(json: Json, botToken: String, chatId: Long, question: Question)
 
     val response = client.send(request, HttpResponse.BodyHandlers.ofString())
     return response.body()
+}
+
+fun getFile(fileId: String, json: Json, botToken: String): String {
+    val urlGetFile = "$BOT_FILE_URL$botToken/getFile"
+    val requestBody = GetFileRequest(fileId = fileId)
+    val requestBodyString = json.encodeToString(requestBody)
+    val client: HttpClient = HttpClient.newBuilder().build()
+    val request: HttpRequest = HttpRequest.newBuilder()
+        .uri(URI.create(urlGetFile))
+        .header("Content-type", "application/json")
+        .POST(HttpRequest.BodyPublishers.ofString(requestBodyString))
+        .build()
+    val response: HttpResponse<String> = client.send(
+        request,
+        HttpResponse.BodyHandlers.ofString()
+    )
+    return response.body()
+}
+
+fun downloadFile(filePath: String, fileName: String, botToken: String) {
+    val urlGetFile = "$BOT_FILE_URL$botToken/$filePath"
+    println(urlGetFile)
+    val request = HttpRequest
+        .newBuilder()
+        .uri(URI.create(urlGetFile))
+        .GET()
+        .build()
+
+    val response: HttpResponse<InputStream> = HttpClient
+    .newHttpClient()
+        .send(request, HttpResponse.BodyHandlers.ofInputStream())
+
+    println("status code: " + response.statusCode())
+    val body: InputStream = response.body()
+    body.copyTo(File(fileName).outputStream(), 16 * 1024)
 }
